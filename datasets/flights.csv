@@ -1,0 +1,11 @@
+flight_id,airline,flight_number,origin,destination,departure_time,arrival_time,duration_minutes,price_usd,stops,cabin_class
+FLIGHT001,Emirates,EK 571,CCU,DXB,09:45,13:30,315,392.00,0,Economy
+FLIGHT002,IndiGo,6E 1401,IXR,DXB,06:15,13:10,445,322.00,1,Economy
+FLIGHT003,flydubai,FZ 450,CCU,DXB,02:10,06:05,325,348.00,0,Economy
+FLIGHT004,Air India,AI 995,CCU,DXB,20:30,04:45,525,299.00,1,Economy
+FLIGHT005,Etihad Airways,EY 257,CCU,AUH,04:20,08:35,345,365.00,0,Economy
+FLIGHT006,Singapore Airlines,SQ 517,CCU,SIN,23:50,06:40,260,310.00,0,Economy
+FLIGHT007,AirAsia,AK 61,CCU,DPS,00:30,11:45,525,225.00,1,Economy
+FLIGHT008,Air France,AF 226,DEL,CDG,01:50,07:05,585,580.00,0,Economy
+FLIGHT009,All Nippon Airways,NH 828,DEL,NRT,18:00,05:50,560,620.00,0,Economy
+FLIGHT010,Swiss International Air Lines,LX 147,BOM,ZRH,01:15,06:20,575,690.00,0,Economy

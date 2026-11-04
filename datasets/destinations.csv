@@ -1,0 +1,11 @@
+destination_id,name,country,continent,best_season,avg_daily_budget_usd,currency,language,safety_rating,description
+DEST001,Dubai,United Arab Emirates,Asia,November to March,180,AED,Arabic / English,4.9,Ultra-modern metropolis known for luxury shopping ultramodern architecture and vibrant nightlife
+DEST002,Bali,Indonesia,Asia,April to October,65,IDR,Indonesian / English,4.7,Tropical island paradise famed for forested volcanic mountains iconic beaches and coral reefs
+DEST003,Singapore,Singapore,Asia,Year-round,160,SGD,English / Mandarin / Malay,4.95,Global financial hub famous for futuristic architecture Marina Bay botanical gardens and street food
+DEST004,Paris,France,Europe,April to October,195,EUR,French,4.6,City of Light celebrated for high fashion haute cuisine art museums like Louvre and Eiffel Tower
+DEST005,Tokyo,Japan,Asia,March to May & Sept to Nov,175,JPY,Japanese,4.98,Bustling capital combining neon skyscrapers with historic temples anime hubs and Michelin gastronomy
+DEST006,Swiss Alps,Switzerland,Europe,December to April & June to Sept,240,CHF,German / French,4.92,Stunning alpine scenery world-class ski slopes Glacier Express and pristine mountain lakes
+DEST007,Rome,Italy,Europe,April to June & Sept to Oct,150,EUR,Italian,4.5,Ancient historic capital home to the Colosseum Vatican City Roman Forum and exquisite Italian dining
+DEST008,Bangkok,Thailand,Asia,November to February,55,THB,Thai / English,4.6,Vibrant capital with ornate shrines lively street life floating markets and delicious pad thai
+DEST009,London,United Kingdom,Europe,May to September,210,GBP,English,4.7,Global cultural center featuring Big Ben Tower of London West End theatre and British Museum
+DEST010,New York City,United States,North America,April to June & Sept to Nov,260,USD,English,4.4,The city that never sleeps featuring Times Square Broadway Central Park and iconic skyline

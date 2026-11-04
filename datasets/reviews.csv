@@ -1,0 +1,11 @@
+review_id,entity_type,entity_id,user_name,rating,review_text,sentiment_score,review_date
+REV001,hotel,HOTEL001,Ranjeet K.,5,Rove Downtown was exceptionally clean with direct Burj Khalifa views from the pool deck. Metro shuttle made traveling so convenient.,0.96,2026-10-15
+REV002,flight,FLIGHT001,Priya S.,5,Emirates non-stop from Kolkata to Dubai was flawless. Generous 30kg baggage allowed ample shopping at Dubai Mall.,0.94,2026-09-28
+REV003,attraction,ATTR004,Amitabh M.,5,The Red Dunes Desert Safari in Lahbab was thrilling! The dune bashing sandboarding and barbecue under stars was unforgettable.,0.98,2026-10-02
+REV004,attraction,ATTR001,Neha D.,5,Viewing Dubai from 124th floor at sunset took my breath away. Booked via TravelMate AI seamlessly.,0.95,2026-10-18
+REV005,hotel,HOTEL002,Vikram R.,5,Address Downtown provided world-class hospitality and the private pedestrian bridge to Dubai Mall saved so much time.,0.97,2026-08-14
+REV006,attraction,ATTR008,Suresh B.,5,The Abu Dhabi Grand Mosque is majestic beyond words. The white marble courtyards and floral inlays are stunning.,0.99,2026-09-12
+REV007,flight,FLIGHT002,Deepak P.,4,IndiGo connection via Mumbai was on schedule. Value for money was unbeatable.,0.84,2026-10-05
+REV008,hotel,HOTEL004,Meenakshi T.,4,Marina Byblos was very close to DMCC metro station and JBR beach. Great English pub downstairs.,0.88,2026-07-22
+REV009,attraction,ATTR005,Karan G.,5,Museum of the Future looks like a spaceship from 2071! The interactive DNA vault is a must-see.,0.96,2026-10-25
+REV010,hotel,HOTEL003,Sunil K.,5,Atlantis Palm Aquaventure was pure fun for the entire family. Feeding stingrays was a highlight!,0.97,2026-08-30

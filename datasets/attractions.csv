@@ -1,0 +1,21 @@
+attraction_id,destination_id,name,category,rating,entry_fee_usd,opening_hours,latitude,longitude,duration_hours
+ATTR001,DEST001,Burj Khalifa (At The Top),Landmark,4.9,49.00,08:30-23:00,25.1972,55.2744,2.5
+ATTR002,DEST001,The Dubai Mall & Dubai Aquarium,Shopping & Wildlife,4.8,38.00,10:00-00:00,25.1985,55.2796,4.0
+ATTR003,DEST001,Dubai Fountain Show,Entertainment,4.9,0.00,18:00-23:00,25.1960,55.2760,1.0
+ATTR004,DEST001,Lahbab Red Dunes Desert Safari,Adventure,4.9,59.00,15:00-21:30,24.9750,55.5920,6.5
+ATTR005,DEST001,Museum of the Future,Culture & Innovation,4.7,40.00,10:00-19:30,25.2253,55.2818,2.5
+ATTR006,DEST001,Palm Jumeirah & The View at The Palm,Landmark,4.8,28.00,09:00-22:00,25.1124,55.1390,3.0
+ATTR007,DEST001,Al Fahidi Historical District & Gold Souk,Heritage & Culture,4.6,1.00,09:00-22:00,25.2632,55.2972,3.5
+ATTR008,DEST001,Sheikh Zayed Grand Mosque (Abu Dhabi Tour),Architecture & Culture,4.95,0.00,09:00-22:00,24.4128,54.4749,4.0
+ATTR009,DEST001,Dubai Marina & JBR Walk,Nightlife & Waterfront,4.8,0.00,24 Hours,25.0805,55.1403,3.0
+ATTR010,DEST001,Miracle Garden & Global Village,Entertainment & Gardens,4.7,25.00,16:00-00:00,25.0600,55.2440,4.0
+ATTR011,DEST002,Tanah Lot Temple,Culture & Sunset,4.7,5.00,07:00-19:00,-8.6212,115.0868,2.0
+ATTR012,DEST002,Ubud Sacred Monkey Forest Sanctuary,Nature & Wildlife,4.6,6.00,09:00-18:00,-8.5194,115.2631,2.5
+ATTR013,DEST003,Gardens by the Bay & Supertree Grove,Botanical Landmark,4.9,24.00,09:00-21:00,1.2816,103.8636,3.5
+ATTR014,DEST003,Marina Bay Sands SkyPark Observation Deck,Landmark,4.8,25.00,11:00-21:00,1.2838,103.8591,2.0
+ATTR015,DEST004,Eiffel Tower Summit,Landmark,4.8,32.00,09:30-23:45,48.8584,2.2945,3.0
+ATTR016,DEST004,Louvre Museum,Art & History,4.9,20.00,09:00-18:00,48.8606,2.3376,4.5
+ATTR017,DEST005,TeamLab Planets Tokyo,Digital Art,4.9,28.00,09:00-22:00,35.6515,139.7915,2.5
+ATTR018,DEST005,Senso-ji Temple Asakusa,History & Heritage,4.8,0.00,06:00-17:00,35.7148,139.7967,2.0
+ATTR019,DEST006,Jungfraujoch Top of Europe,Alpine Wonder,4.9,185.00,08:00-16:30,46.5475,7.9822,5.0
+ATTR020,DEST006,Matterhorn Glacier Paradise,Ski & Scenic,4.8,110.00,08:30-16:00,45.9381,7.7297,4.0

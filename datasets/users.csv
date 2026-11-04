@@ -1,0 +1,11 @@
+user_id,email,full_name,home_city,passport_country,preferred_currency,travel_style,created_at
+USR001,ranjeet@example.com,Ranjeet Kumar,Dhanbad,India,INR,Adventure & Sightseeing,2026-10-01T10:15:00Z
+USR002,priya.sharma@example.com,Priya Sharma,Mumbai,India,INR,Luxury & Wellness,2026-10-05T14:22:30Z
+USR003,amit.verma@example.com,Amit Verma,Bangalore,India,INR,Solo Backpacking,2026-10-08T09:40:12Z
+USR004,sarah.jenkins@example.com,Sarah Jenkins,London,United Kingdom,GBP,Culture & Heritage,2026-10-12T16:05:44Z
+USR005,daiki.tanaka@example.com,Daiki Tanaka,Tokyo,Japan,JPY,Photography & Nature,2026-10-14T11:50:00Z
+USR006,marcus.vance@example.com,Marcus Vance,San Francisco,United States,USD,Business & Luxury,2026-10-18T18:30:15Z
+USR007,ananya.sen@example.com,Ananya Sen,Kolkata,India,INR,Family & Beach,2026-10-22T08:12:50Z
+USR008,carlos.rodriguez@example.com,Carlos Rodriguez,Madrid,Spain,EUR,Culinary & Wine,2026-10-25T13:45:00Z
+USR009,sneha.patel@example.com,Sneha Patel,Ahmedabad,India,INR,Shopping & Heritage,2026-10-28T17:20:10Z
+USR010,innovation27x7.admin@travelmate.ai,Innovation 27X7 Admin,New Delhi,India,INR,System Administrator,2026-10-01T00:00:00Z

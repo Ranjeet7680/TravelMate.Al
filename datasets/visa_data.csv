@@ -1,0 +1,11 @@
+visa_id,passport_country,destination_country,visa_type,max_stay_days,processing_time_days,fee_usd,requirements
+VISA001,India,United Arab Emirates,Tourist eVisa,30,3,90.00,"Valid passport with min 6 months validity|Passport photo with white background|Confirmed return ticket|Hotel booking confirmation"
+VISA002,India,United Arab Emirates,Visa on Arrival (VoA),14,0,35.00,"Valid ordinary Indian passport|Valid US B1/B2, Green Card, UK residence permit or EU Schengen visa with min 6 months validity"
+VISA003,India,Indonesia,Visa on Arrival / e-VoA,30,0,35.00,"Passport valid for 6 months|Return flight ticket|Online e-VoA payment via official immigration portal"
+VISA004,India,Singapore,Electronic Visa (eVisa),30,4,30.00,"Processed through authorized visa agent|Bank statement 3 months|Cover letter & confirmed flight tickets"
+VISA005,India,France (Schengen),Short-Stay Tourist Visa (Type C),90,15,95.00,"VFS biometric appointment|Travel medical insurance min EUR 30,000|ITR 3 years|Bank statement 6 months"
+VISA006,India,Japan,Short-term Tourist eVisa,90,5,25.00,"Online application|ITR assessment copy|Bank statement with adequate balance|Flight itinerary"
+VISA007,India,Switzerland (Schengen),Short-Stay Tourist Visa,90,15,95.00,"VFS biometrics appointment|Travel insurance coverage EUR 30,000|Proof of accommodation & financial means"
+VISA008,India,Thailand,Visa on Arrival / Visa Exemption,30,0,0.00,"Passport valid 6 months|Confirmed onward ticket within 30 days|Proof of 10,000 THB funds per person"
+VISA009,India,United Kingdom,Standard Visitor Visa,180,21,145.00,"TLScontact biometric appointment|Employment verification letter|Financial statements 6 months"
+VISA010,India,United States,B1/B2 Non-Immigrant Tourist Visa,3650,45,185.00,"DS-160 submission|US Embassy interview appointment|Proof of strong financial and social ties to India"

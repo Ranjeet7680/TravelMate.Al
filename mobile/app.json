@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "TravelMate AI",
+    "slug": "travelmate-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "travelmate",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#101B35"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.innovation27x7.travelmate"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#101B35"
+      },
+      "package": "com.innovation27x7.travelmate"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
