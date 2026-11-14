@@ -24,7 +24,9 @@ import {
   Bell,
   Heart,
   Receipt,
-  Smartphone
+  Smartphone,
+  Globe,
+  Lock
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -46,6 +48,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const menuItems: { screen?: ScreenType; action?: () => void; label: string; icon: React.ReactNode; badge?: string | number }[] = [
+    { screen: '03-landing', label: 'Landing Page', icon: <Globe className="w-4 h-4 text-sky-500" /> },
+    { screen: '04-login', label: 'Login / Sign In', icon: <Lock className="w-4 h-4 text-emerald-500" />, badge: 'Vault' },
     { screen: '05-dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { screen: '06-copilot', label: 'AI Travel Copilot', icon: <Bot className="w-4 h-4" />, badge: 'AI' },
     { screen: '10-destinations', label: 'Destination Explorer', icon: <Compass className="w-4 h-4" />, badge: '50+' },
@@ -63,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { screen: '16-voice', label: 'Voice AI & SOS', icon: <Mic className="w-4 h-4" /> },
     { screen: '17-profile', label: 'Profile & Settings', icon: <Settings className="w-4 h-4" /> },
     { screen: '18-admin', label: 'Admin Portal', icon: <Server className="w-4 h-4" /> },
+    { screen: '01-welcome', label: 'Loading Showcase', icon: <Sparkles className="w-4 h-4 text-ai-purple" /> },
   ];
 
   const handleNav = (itemOrScreen: { screen?: ScreenType; action?: () => void } | ScreenType) => {

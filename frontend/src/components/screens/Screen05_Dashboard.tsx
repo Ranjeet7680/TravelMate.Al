@@ -105,6 +105,10 @@ export const Screen05_Dashboard: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-midnight-navy dark:text-white flex items-center gap-2 flex-wrap">
             <span>Hello, {userProfile.name}!</span>
             <span className="text-2xl animate-bounce" style={{ animationDuration: '2s' }}>👋</span>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              <span>256-Bit Vault Active</span>
+            </span>
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Ready for your next adventure? Your Dubai trip is{' '}
@@ -114,6 +118,15 @@ export const Screen05_Dashboard: React.FC = () => {
 
         {/* Top right: search + notification + profile */}
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setCurrentScreen('03-landing')}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full theme-card hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-ai-purple transition"
+            title="Return to Landing Page"
+          >
+            <Globe2 className="w-3.5 h-3.5 text-sky-500" />
+            <span>Landing Page</span>
+          </button>
+
           <button
             onClick={() => setCurrentScreen('10-destinations')}
             className="p-2.5 rounded-full theme-card hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-110"
