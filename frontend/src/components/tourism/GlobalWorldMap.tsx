@@ -69,8 +69,8 @@ export const GlobalWorldMap: React.FC<GlobalWorldMapProps> = ({
       attribution: 'Map data &copy; OpenTopoMap'
     },
     dark: {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: '&copy; CARTO &copy; OpenStreetMap'
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap'
     }
   };
 

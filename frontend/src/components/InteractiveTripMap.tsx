@@ -24,7 +24,9 @@ import {
   ShieldCheck,
   Calendar,
   Eye,
-  Bus
+  Bus,
+  Plus,
+  Minus
 } from 'lucide-react';
 
 export interface Waypoint {
@@ -302,11 +304,11 @@ export const InteractiveTripMap: React.FC = () => {
     setAudioProgress(0);
   }, [selectedWaypoint.id]);
 
-  // Leaflet Tile URLs
+  // Leaflet Tile URLs - Watermark-free ArcGIS and OpenStreetMap layers
   const TILE_SERVERS: Record<MapTileLayer, { url: string; attribution: string }> = {
     dark: {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: '&copy; CARTO &copy; OpenStreetMap'
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap'
     },
     satellite: {
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -324,9 +326,10 @@ export const InteractiveTripMap: React.FC = () => {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
+      // Default view: Focus on Dubai Transit Spine at Zoom 12.2 (Stops 1-6 spacious and separated)
       const map = L.map(mapContainerRef.current, {
-        center: [25.1972, 55.2744],
-        zoom: 11,
+        center: [25.1850, 55.2600],
+        zoom: 12.2,
         minZoom: 8,
         maxZoom: 18,
         zoomControl: false,
@@ -403,37 +406,37 @@ export const InteractiveTripMap: React.FC = () => {
       const iconHtml = `
         <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
           ${isSelected ? `
-            <div style="position: absolute; width: 44px; height: 44px; border-radius: 9999px; background: rgba(121, 86, 245, 0.35); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; top: -6px; left: -6px;"></div>
+            <div style="position: absolute; width: 42px; height: 42px; border-radius: 9999px; background: rgba(121, 86, 245, 0.4); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; top: -6px; left: -6px;"></div>
           ` : ''}
           <div style="
-            width: ${isSelected ? '34px' : '28px'};
-            height: ${isSelected ? '34px' : '28px'};
+            width: ${isSelected ? '32px' : '26px'};
+            height: ${isSelected ? '32px' : '26px'};
             border-radius: 9999px;
             background: ${badgeColor};
-            border: 2px solid ${isSelected ? '#ffffff' : 'rgba(255,255,255,0.85)'};
+            border: 2px solid ${isSelected ? '#ffffff' : 'rgba(255,255,255,0.9)'};
             color: #ffffff;
             font-weight: 900;
-            font-size: ${isSelected ? '13px' : '11px'};
+            font-size: ${isSelected ? '12px' : '11px'};
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.45);
-            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
           ">
             ${wp.stopNumber}
           </div>
           ${isSelected ? `
             <div style="
-              margin-top: 4px;
+              margin-top: 5px;
               padding: 2px 8px;
               border-radius: 6px;
               background: #0f172a;
-              border: 1px solid rgba(255,255,255,0.2);
+              border: 1px solid rgba(255,255,255,0.25);
               color: #ffffff;
               font-size: 10px;
               font-weight: 800;
               white-space: nowrap;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+              box-shadow: 0 4px 14px rgba(0,0,0,0.6);
             ">
               ${wp.shortName}
             </div>
@@ -444,14 +447,19 @@ export const InteractiveTripMap: React.FC = () => {
       const customIcon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: iconHtml,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17]
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
       });
 
       const marker = L.marker([wp.lat, wp.lng], { icon: customIcon });
+      marker.bindTooltip(`<b>${wp.stopNumber}. ${wp.name}</b><br><span style="color:#a855f7;font-size:10px;">${wp.category} • Day ${wp.day}</span>`, {
+        direction: 'top',
+        offset: [0, -18],
+        opacity: 0.95
+      });
+
       marker.on('click', () => {
-        setSelectedWaypoint(wp);
-        map.flyTo([wp.lat, wp.lng], 13, { duration: 0.8 });
+        handleSelectWaypoint(wp);
       });
 
       markersGroup.addLayer(marker);
@@ -464,24 +472,37 @@ export const InteractiveTripMap: React.FC = () => {
 
   }, [filteredWaypoints, selectedWaypoint.id, viewStyle]);
 
-  // Pan to selected waypoint when clicked from controls or list
+  // Pan smoothly to selected waypoint with altitude tailored to destination
   const handleSelectWaypoint = (wp: Waypoint) => {
     setSelectedWaypoint(wp);
     if (viewStyle === 'real' && mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([wp.lat, wp.lng], 13, { duration: 1.0 });
+      if (wp.id === 'wp-8') {
+        // Abu Dhabi Sheikh Zayed Mosque
+        mapInstanceRef.current.flyTo([wp.lat, wp.lng], 13, { duration: 1.2 });
+      } else if (wp.id === 'wp-7') {
+        // Lahbab Red Dunes Desert
+        mapInstanceRef.current.flyTo([wp.lat, wp.lng], 12, { duration: 1.2 });
+      } else {
+        // Downtown Dubai / Marina / Palm / Airport (Spacious Zoom 13.5)
+        mapInstanceRef.current.flyTo([wp.lat, wp.lng], 13.5, { duration: 1.0 });
+      }
     }
   };
 
-  // Recenter all stops
-  const handleRecenter = () => {
+  // View presets
+  const handleFocusDubai = () => {
     if (!mapInstanceRef.current) return;
-    if (filteredWaypoints.length === 1) {
-      mapInstanceRef.current.flyTo([filteredWaypoints[0].lat, filteredWaypoints[0].lng], 12);
-    } else {
-      const bounds = L.latLngBounds(filteredWaypoints.map(w => [w.lat, w.lng]));
-      mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] });
-    }
+    mapInstanceRef.current.flyTo([25.1850, 55.2600], 12.2, { duration: 1.0 });
   };
+
+  const handleViewRegional = () => {
+    if (!mapInstanceRef.current) return;
+    const bounds = L.latLngBounds(WAYPOINTS.map(w => [w.lat, w.lng]));
+    mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
+  };
+
+  const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
+  const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
 
   return (
     <div className="space-y-4">
@@ -587,21 +608,22 @@ export const InteractiveTripMap: React.FC = () => {
                 </div>
               </div>
 
-              {/* Top-Right Map Tile Switcher & Recenter */}
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-midnight-navy/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-700/60 shadow-lg text-[11px] font-bold text-white">
+              {/* Top-Right Map Controls: Layers, View Presets, Zoom & Recenter */}
+              <div className="absolute top-4 right-4 z-10 flex flex-wrap items-center gap-1.5 bg-midnight-navy/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-700/60 shadow-lg text-[11px] font-bold text-white">
+                {/* Tile Layers */}
                 <button
                   onClick={() => setTileLayer('dark')}
-                  className={`px-2.5 py-1 rounded-xl transition ${
-                    tileLayer === 'dark' ? 'bg-ai-purple text-white' : 'text-slate-400 hover:text-white'
+                  className={`px-2 py-1 rounded-xl transition ${
+                    tileLayer === 'dark' ? 'bg-ai-purple text-white shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
-                  title="Dark Cartographic Map"
+                  title="Dark Cartographic Map (ArcGIS World Dark)"
                 >
                   Dark
                 </button>
                 <button
                   onClick={() => setTileLayer('satellite')}
-                  className={`px-2.5 py-1 rounded-xl transition ${
-                    tileLayer === 'satellite' ? 'bg-ai-purple text-white' : 'text-slate-400 hover:text-white'
+                  className={`px-2 py-1 rounded-xl transition ${
+                    tileLayer === 'satellite' ? 'bg-ai-purple text-white shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                   title="High-Res Esri Satellite"
                 >
@@ -609,20 +631,48 @@ export const InteractiveTripMap: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setTileLayer('street')}
-                  className={`px-2.5 py-1 rounded-xl transition ${
-                    tileLayer === 'street' ? 'bg-ai-purple text-white' : 'text-slate-400 hover:text-white'
+                  className={`px-2 py-1 rounded-xl transition ${
+                    tileLayer === 'street' ? 'bg-ai-purple text-white shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                   title="Street Map"
                 >
                   Street
                 </button>
+
                 <div className="w-[1px] h-4 bg-slate-700 mx-0.5" />
+
+                {/* View Presets */}
                 <button
-                  onClick={handleRecenter}
-                  className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
-                  title="Fit All Route Stops"
+                  onClick={handleFocusDubai}
+                  className="px-2 py-1 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                  title="Focus on Dubai City Corridor (Zoom 12.2)"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  Dubai Focus
+                </button>
+                <button
+                  onClick={handleViewRegional}
+                  className="px-2 py-1 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                  title="View Entire Emirates Regional Route (All 8)"
+                >
+                  All UAE
+                </button>
+
+                <div className="w-[1px] h-4 bg-slate-700 mx-0.5" />
+
+                {/* Zoom +/- Controls */}
+                <button
+                  onClick={handleZoomIn}
+                  className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                  title="Zoom In"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={handleZoomOut}
+                  className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                  title="Zoom Out"
+                >
+                  <Minus className="w-3.5 h-3.5" />
                 </button>
               </div>
 
