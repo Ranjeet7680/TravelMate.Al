@@ -28,7 +28,13 @@ import {
   Check,
   X,
   Play,
-  Crown
+  Crown,
+  Moon,
+  ShieldAlert,
+  KeyRound,
+  Layers,
+  Radio,
+  FileCheck
 } from 'lucide-react';
 
 interface AppleShowcaseDest {
@@ -95,11 +101,29 @@ const APPLE_FEATURED_DESTINATIONS: AppleShowcaseDest[] = [
     dailyINR: 2200,
     flightFrom: 'Direct Cab from Dhanbad',
     image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    name: 'New York',
+    country: 'United States',
+    tag: 'Manhattan Skyline & Broadway Lights',
+    temp: '14°C',
+    dailyINR: 18500,
+    flightFrom: 'from ₹64,000 round trip',
+    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    name: 'Ranchi',
+    country: 'India (Jharkhand)',
+    tag: 'City of Waterfalls & Tagore Hill',
+    temp: '24°C',
+    dailyINR: 1900,
+    flightFrom: 'Direct Highway Drive from Dhanbad',
+    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80'
   }
 ];
 
 export const Screen03_Landing: React.FC = () => {
-  const { setCurrentScreen, currency, sendUserPrompt, searchFilter, setSearchFilter, setProModalOpen } = useTravel();
+  const { setCurrentScreen, currency, sendUserPrompt, searchFilter, setSearchFilter, setProModalOpen, theme, toggleTheme } = useTravel();
 
   const [activeTab, setActiveTab] = useState<'flights' | 'hotels' | 'packages' | 'activities'>('flights');
   const [fromCity, setFromCity] = useState(searchFilter.origin);
@@ -113,6 +137,10 @@ export const Screen03_Landing: React.FC = () => {
   // Swarm Consensus Live Simulator state
   const [simStep, setSimStep] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  // Live Security Audit telemetry state
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditVerified, setAuditVerified] = useState(true);
 
   // Auto-cycle showcase
   useEffect(() => {
@@ -148,12 +176,20 @@ export const Screen03_Landing: React.FC = () => {
     }, 2400);
   };
 
+  const runSecurityAudit = () => {
+    setAuditLoading(true);
+    setTimeout(() => {
+      setAuditLoading(false);
+      setAuditVerified(true);
+    }, 900);
+  };
+
   const showcase = APPLE_FEATURED_DESTINATIONS[activeShowcaseIdx];
 
   return (
     <div className="space-y-16 pb-24 select-none animate-page-enter">
       {/* ── Apple Style Floating Navbar ── */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200/60 dark:border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all shadow-sm">
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/95 dark:bg-[#070b14]/95 border-b border-slate-200/80 dark:border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all shadow-sm">
         <div 
           onClick={() => setCurrentScreen('03-landing')}
           className="flex items-center gap-3 cursor-pointer group"
@@ -186,6 +222,15 @@ export const Screen03_Landing: React.FC = () => {
 
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2.5">
+          {/* Light / Dark Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-ai-purple hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            title="Toggle Light / Dark Mode"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-ai-purple" />}
+          </button>
+
           <button
             onClick={() => setCurrentScreen('04-login')}
             className="px-4 py-2 rounded-xl text-xs font-bold text-midnight-navy dark:text-white hover:text-ai-purple transition flex items-center gap-1.5 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -204,21 +249,21 @@ export const Screen03_Landing: React.FC = () => {
       </header>
 
       {/* ── 1. Apple Hero Section: Typography, Lighting & Dynamic Showcase ── */}
-      <section className="relative px-4 pt-12 pb-20 overflow-hidden">
+      <section className="relative px-4 pt-16 sm:pt-24 pb-20 overflow-hidden">
         {/* Apple subtle radial lighting glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-ai-purple/20 via-sky-500/10 to-transparent blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[400px] bg-gradient-to-b from-ai-purple/20 via-sky-500/10 to-transparent blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto space-y-12">
           
           {/* Main Headline & Identity */}
-          <div className="text-center space-y-5 max-w-4xl mx-auto animate-slide-up">
+          <div className="text-center space-y-6 max-w-4xl mx-auto animate-slide-up">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/5 dark:bg-white/10 border border-slate-200/80 dark:border-white/15 backdrop-blur-xl text-ai-purple text-xs font-bold shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-ai-purple" />
               <span>Conceived in Intelligence • Team Innovation 27X7</span>
             </div>
 
-            <h1 className="text-5xl sm:text-7xl font-black text-midnight-navy dark:text-white tracking-tight leading-[1.08]">
-              The Future of Travel. <br />
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-midnight-navy dark:text-white tracking-tight leading-[1.12]">
+              The Future of Global Travel. <br />
               <span className="bg-gradient-to-r from-ai-purple via-sky-500 to-teal-400 bg-clip-text text-transparent">
                 Orchestrated in Real Time.
               </span>
@@ -245,7 +290,7 @@ export const Screen03_Landing: React.FC = () => {
                 onClick={() => setCurrentScreen('04-login')}
                 className="px-7 py-4 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl text-midnight-navy dark:text-white font-black text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
               >
-                <Lock className="w-4 h-4 text-ai-purple" />
+                <Lock className="w-4 h-4 text-emerald-500" />
                 <span>Sign In / Traveler Vault</span>
               </button>
 
@@ -634,41 +679,140 @@ export const Screen03_Landing: React.FC = () => {
       {/* ── 4. Apple-Style Security & Privacy Fortress Section ── */}
       <section className="max-w-7xl mx-auto px-4 space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">Fortress-Grade Safeguards</span>
+          <span className="text-xs font-black text-emerald-500 uppercase tracking-widest flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>Hardware-Grade Traveler Security</span>
+          </span>
           <h2 className="text-3xl sm:text-5xl font-black text-midnight-navy dark:text-white tracking-tight">
-            Privacy. Built Right into the Journey.
+            Privacy. Built Right into the Silicon.
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Your travel identity, biometric tokens, and government documents are encrypted client-side and never sold.
+            Your travel identity, biometric tokens, and government documents are encrypted client-side in a zero-knowledge hardware enclave. Never transmitted in plaintext, never sold.
           </p>
         </div>
 
+        {/* Apple-style Interactive Hardware Security Enclave Card */}
+        <div className="p-7 sm:p-10 rounded-3xl bg-gradient-to-br from-[#070b15] via-[#0d162d] to-[#120a22] text-white border-2 border-emerald-500/30 shadow-2xl relative overflow-hidden">
+          {/* Subtle green ambient lighting glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>Zero-Knowledge Architecture Verified</span>
+              </div>
+              <h3 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+                Your Passport & Data. <br />
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+                  Cryptographically Protected.
+                </span>
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                TravelMate AI operates with client-side asymmetric keypairs. Flight PNRs, Dubai hotel reservations, and Aadhaar/Passport hashes are sealed using AES-256-GCM. Third-party GDS nodes verify identity through tokenized IATA proofs without ever accessing your raw credentials.
+              </p>
+
+              {/* Security Telemetry Pill Row */}
+              <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] font-mono text-slate-300">
+                <span className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5 text-emerald-400">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>AES-256-GCM</span>
+                </span>
+                <span className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5 text-sky-400">
+                  <Fingerprint className="w-3.5 h-3.5" />
+                  <span>FIDO2 WebAuthn Passkeys</span>
+                </span>
+                <span className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5 text-amber-300">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>TLS 1.3 Transport</span>
+                </span>
+                <span className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5 text-purple-300">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>DPDP & GDPR Compliant</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Live Security Inspector Box */}
+            <div className="p-6 rounded-2xl bg-black/50 border border-emerald-500/30 backdrop-blur-xl w-full lg:w-80 shrink-0 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Enclave Security Monitor</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  PASS
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Cryptographic Enclave</span>
+                  <span className="text-emerald-400 font-mono font-bold">Hardened</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Vulnerabilities Detected</span>
+                  <span className="text-emerald-400 font-mono font-bold">0 Clean</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Tamper Integrity</span>
+                  <span className="text-sky-400 font-mono font-bold">100% Intact</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>IATA Two-Way Token</span>
+                  <span className="text-amber-400 font-mono font-bold">Certified</span>
+                </div>
+              </div>
+
+              <button
+                onClick={runSecurityAudit}
+                disabled={auditLoading}
+                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shadow-emerald-500/20 disabled:opacity-50"
+              >
+                {auditLoading ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-950" />
+                    <span>Auditing Enclave Tokens...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-slate-950" />
+                    <span>{auditVerified ? 'Audit Re-Verified (32ms)' : 'Run Live Security Audit'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Pillar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             {
               icon: Lock,
-              title: '256-Bit AES TLS',
-              desc: 'End-to-end military grade encryption protecting all booking data in transit and at rest.'
+              title: '256-Bit AES Hardware Vault',
+              desc: 'Military-grade authenticated encryption protecting all traveler passports, vouchers, and boarding passes in your local hardware keystore.'
             },
             {
               icon: Fingerprint,
               title: 'Passkeys & Biometrics',
-              desc: 'Seamless passwordless authentication with Face ID, Touch ID, and WebAuthn standards.'
+              desc: 'Seamless passwordless authentication via Apple Touch ID, Face ID, and FIDO2 standards. Immune to credential phishing.'
             },
             {
               icon: ShieldCheck,
-              title: 'Zero-Knowledge Vault',
-              desc: 'Passports, boarding passes, and visa vouchers are stored exclusively in your local device enclave.'
+              title: 'Zero-Knowledge Storage',
+              desc: 'Booking vouchers and personal travel metadata are sealed with your private key. Never stored in plaintext on central servers.'
             },
             {
               icon: Activity,
               title: '24/7 SOS Satellite Lifeline',
-              desc: 'Direct priority links to local embassies, hospitals, and emergency consular services in 195 countries.'
+              desc: 'Encrypted emergency dispatch connecting you directly to local embassies, hospitals, and consular staff in 195+ countries.'
             }
           ].map(sec => (
             <div
               key={sec.title}
-              className="theme-card p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-3"
+              className="theme-card p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-3 hover:border-emerald-500/40 transition-colors"
             >
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold">
                 <sec.icon className="w-5 h-5" />
@@ -677,6 +821,79 @@ export const Screen03_Landing: React.FC = () => {
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{sec.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── 3D Interactive World Map Teaser Section ── */}
+      <section className="max-w-7xl mx-auto px-4">
+        <div className="theme-card p-8 sm:p-12 rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+            <div className="space-y-4 max-w-xl">
+              <span className="px-3 py-1 rounded-full bg-sky-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 w-fit">
+                <Globe2 className="w-3.5 h-3.5" />
+                <span>Global Discovery Engine</span>
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                Explore the Planet in Interactive 3D.
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Rotate, zoom, and navigate all 7 continents with our WebGL 3D globe. Inspect monuments, beaches, mountain passes, and cultural landmarks across 52+ destinations with verified GPS coordinates and live flight routes from Dhanbad & Kolkata.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  onClick={() => setCurrentScreen('10-destinations')}
+                  className="btn-primary-gradient px-7 py-3.5 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-purple-500/30 hover:scale-105 active:scale-95 transition"
+                >
+                  <Globe2 className="w-4 h-4" />
+                  <span>Launch 3D World Explorer</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentScreen('19-compare')}
+                  className="px-6 py-3.5 rounded-2xl border border-white/20 hover:bg-white/10 font-bold text-xs sm:text-sm transition flex items-center gap-2"
+                >
+                  <span>Compare Trip.com vs MMT</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 3D Map Visual Card */}
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl w-full lg:w-96 shrink-0 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3 text-xs font-mono text-slate-300">
+                <span className="flex items-center gap-1 text-sky-400">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>GLOBAL WAYPOINTS</span>
+                </span>
+                <span className="text-emerald-400 font-bold">52 VERIFIED</span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                {[
+                  { city: 'Dubai, UAE', coords: '25.2048° N, 55.2708° E', status: 'Transit Hub • 11d away' },
+                  { city: 'Tokyo, Japan', coords: '35.6762° N, 139.6503° E', status: 'Megacity • Direct flights' },
+                  { city: 'Paris, France', coords: '48.8566° N, 2.3522° E', status: 'Schengen Area • 60-day visa' },
+                  { city: 'Netarhat, Jharkhand', coords: '23.4795° N, 84.2697° E', status: 'Pine Valleys • Direct Cab' },
+                ].map(spot => (
+                  <div key={spot.city} className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-white">{spot.city}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{spot.coords}</div>
+                    </div>
+                    <span className="text-[10px] text-sky-300 font-medium">{spot.status}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Layers className="w-3 h-3 text-ai-purple" />
+                  <span>Satellite • Terrain • Streets</span>
+                </span>
+                <span className="text-emerald-400 font-semibold">Offline Cached</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

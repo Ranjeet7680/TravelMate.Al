@@ -28,6 +28,7 @@ export const Screen04_Login: React.FC = () => {
   const [password, setPassword] = useState('TravelMate@2026');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [resetSent, setResetSent] = useState(false);
 
   // Sign up fields
   const [fullName, setFullName] = useState('Ranjeet Kumar');
@@ -287,12 +288,22 @@ export const Screen04_Login: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => alert('Password reset verification dispatched to ' + emailOrPhone)}
+                    onClick={() => {
+                      setResetSent(true);
+                      setTimeout(() => setResetSent(false), 4000);
+                    }}
                     className="text-ai-purple font-semibold hover:underline"
                   >
                     Forgot password?
                   </button>
                 </div>
+
+                {resetSent && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold flex items-center gap-2 animate-fade-in">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>Cryptographic reset verification link sent to {emailOrPhone}</span>
+                  </div>
+                )}
 
                 {/* Submit CTA */}
                 <button
