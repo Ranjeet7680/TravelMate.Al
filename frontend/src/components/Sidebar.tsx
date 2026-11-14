@@ -84,10 +84,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   };
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col justify-between h-full p-4 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
-      <div className="space-y-6">
-        {/* Brand Logo matching mockup */}
-        <div className="flex items-center justify-between px-2">
+    <aside className="w-64 shrink-0 flex flex-col h-screen sticky top-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300 z-20 select-none">
+      {/* Brand Header (Fixed at top) */}
+      <div className="p-4 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center justify-between">
           <div 
             onClick={() => handleNav('03-landing')}
             className="flex items-center gap-2.5 cursor-pointer group"
@@ -99,90 +99,90 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
               <span className="font-black text-base tracking-tight text-midnight-navy dark:text-white">
                 TravelMate<span className="text-ai-purple">.AI</span>
               </span>
-              <p className="text-[10px] text-slate-400 font-semibold block">Intelligent Copilot</p>
+              <p className="text-[10px] text-slate-400 font-semibold block">Team Innovation 27X7</p>
             </div>
           </div>
 
           {onCloseMobile && (
-            <button onClick={onCloseMobile} className="lg:hidden p-1 text-slate-400">
+            <button onClick={onCloseMobile} className="lg:hidden p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">
               <X className="w-5 h-5" />
             </button>
           )}
         </div>
-
-        {/* Sidebar Nav Items */}
-        <nav className="space-y-1">
-          {menuItems.map(item => {
-            const isActive = item.screen && currentScreen === item.screen;
-            return (
-              <button
-                key={item.screen || item.label}
-                onClick={() => handleNav(item)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition duration-150 ${
-                  isActive
-                    ? 'bg-ai-purple text-white shadow-md shadow-purple-500/25 font-extrabold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-midnight-navy dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : typeof item.badge === 'number'
-                      ? 'bg-rose-500 text-white'
-                      : 'bg-purple-500/15 text-ai-purple'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Bottom Area: Pro Banner & Theme Toggle */}
-      <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-        {/* Pro Banner matching mockup bottom-left */}
+      {/* Sidebar Nav Items (Smooth Scrollable Area) */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+        {menuItems.map(item => {
+          const isActive = item.screen && currentScreen === item.screen;
+          return (
+            <button
+              key={item.screen || item.label}
+              onClick={() => handleNav(item)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition duration-150 ${
+                isActive
+                  ? 'bg-ai-purple text-white shadow-md shadow-purple-500/25 font-extrabold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-midnight-navy dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {item.icon}
+                <span>{item.label}</span>
+              </div>
+              {item.badge && (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : typeof item.badge === 'number'
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-purple-500/15 text-ai-purple'
+                }`}>
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Area: Pro Banner & Theme Toggle (Fixed at bottom) */}
+      <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 bg-slate-50/70 dark:bg-slate-900/80">
+        {/* Pro Banner */}
         {isPro ? (
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/20 via-purple-600/15 to-transparent border border-amber-500/30 space-y-2">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 via-purple-600/15 to-transparent border border-amber-500/30 space-y-1.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-amber-500 font-black text-xs">
-                <Crown className="w-4 h-4 fill-amber-500" />
+              <div className="flex items-center gap-1.5 text-amber-500 font-black text-[11px]">
+                <Crown className="w-3.5 h-3.5 fill-amber-500" />
                 <span>PRO ELITE MEMBER</span>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 font-bold">ACTIVE</span>
             </div>
-            <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
+            <p className="text-[9px] text-slate-600 dark:text-slate-300 leading-tight">
               11 Autonomous Agents Swarm & VIP 24/7 SOS Hotline unlocked.
             </p>
             <button
               onClick={() => setProModalOpen(true)}
-              className="w-full py-1.5 rounded-xl font-bold text-[11px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center justify-center gap-1.5"
+              className="w-full py-1 rounded-lg font-bold text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center justify-center gap-1"
             >
-              <span>View VIP Pass & Perks</span>
-              <Sparkles className="w-3.5 h-3.5" />
+              <span>View VIP Pass</span>
+              <Sparkles className="w-3 h-3" />
             </button>
           </div>
         ) : (
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/15 via-sky-500/10 to-transparent border border-purple-500/20 space-y-2">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/15 via-sky-500/10 to-transparent border border-purple-500/20 space-y-1.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-ai-purple font-extrabold text-xs">
-                <Crown className="w-4 h-4 text-amber-500" />
+              <div className="flex items-center gap-1.5 text-ai-purple font-extrabold text-[11px]">
+                <Crown className="w-3.5 h-3.5 text-amber-500" />
                 <span>Upgrade to Pro</span>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold">SAVE 40%</span>
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-              Get 11 autonomous agents, VIP flight alert pings and 24/7 SOS helpline.
+            <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
+              11 autonomous agents, VIP flight alert pings & SOS helpline.
             </p>
             <button
               onClick={() => setProModalOpen(true)}
-              className="w-full btn-primary-gradient py-1.5 rounded-xl font-bold text-[11px] shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="w-full btn-primary-gradient py-1.5 rounded-lg font-bold text-[10px] shadow-sm flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <span>Upgrade Now</span>
               <span>➔</span>
@@ -191,7 +191,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
         )}
 
         {/* Theme toggle & sign out */}
-        <div className="flex items-center justify-between px-2 text-xs text-slate-400">
+        <div className="flex items-center justify-between px-1 text-xs text-slate-400 pt-1">
           <button
             onClick={() => handleNav('03-landing')}
             className="hover:text-rose-500 text-slate-500 dark:text-slate-400 transition font-bold text-[11px] flex items-center gap-1.5"
@@ -202,10 +202,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </button>
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-xl theme-card hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300"
+            className="p-1.5 rounded-lg theme-card hover:bg-slate-200 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300"
             title="Toggle Light / Dark mode"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-ai-purple" />}
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-ai-purple" />}
           </button>
         </div>
       </div>

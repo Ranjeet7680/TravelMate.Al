@@ -15,23 +15,61 @@ import {
   Zap, 
   SlidersHorizontal,
   ChevronRight,
+  ChevronLeft,
   TrendingDown,
   Coffee,
   Star,
   RefreshCw,
-  Info
+  Info,
+  CreditCard,
+  QrCode,
+  Smartphone,
+  Check,
+  Copy,
+  Download,
+  Lock,
+  User,
+  Mail,
+  Phone,
+  Ticket,
+  X,
+  Calendar
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { generateETicketPDF } from '../../utils/pdfTicketGenerator';
 import { useTravel } from '../../context/TravelContext';
 import { api } from '../../services/api';
-import { UnifiedFlightOption, UnifiedHotelOption, RevalidationResponse } from '../../types';
+import { UnifiedFlightOption, UnifiedHotelOption, RevalidationResponse, BookingConfirmation } from '../../types';
 
 export const Screen19_CompareAndBook: React.FC = () => {
-  const { currentTrip, formatPrice } = useTravel();
+  const { currentTrip, formatPrice, userProfile, addBookingToHistory, currency, setCurrentScreen } = useTravel();
   
   const [activeTab, setActiveTab] = useState<'flights' | 'hotels'>('flights');
   const [loading, setLoading] = useState(false);
   const [revalidatingId, setRevalidatingId] = useState<string | null>(null);
   const [revalidationModal, setRevalidationModal] = useState<RevalidationResponse | null>(null);
+
+  // Active Booking & Fast Checkout state
+  const [activeBookingSession, setActiveBookingSession] = useState<{
+    option: UnifiedFlightOption | UnifiedHotelOption;
+    type: 'flight' | 'hotel';
+    reval: RevalidationResponse;
+  } | null>(null);
+  const [checkoutStep, setCheckoutStep] = useState<'review' | 'payment' | 'processing' | 'confirmed'>('review');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'gpay' | 'netbanking'>('upi');
+  const [passengerName, setPassengerName] = useState(userProfile?.name || 'Ranjeet Kumar');
+  const [passengerEmail, setPassengerEmail] = useState(userProfile?.email || 'ranjeet.travels@travelmate.ai');
+  const [passengerPhone, setPassengerPhone] = useState(userProfile?.phone || '+91 98765 43210');
+  const [passengerGovId, setPassengerGovId] = useState('V2849102');
+  const [seatPreference, setSeatPreference] = useState('14A (Window)');
+  const [mealPreference, setMealPreference] = useState('Vegetarian');
+  const [cardNumber, setCardNumber] = useState('4532 •••• •••• 8821');
+  const [cardExpiry, setCardExpiry] = useState('08/29');
+  const [cardCvv, setCardCvv] = useState('782');
+  const [confirmedBooking, setConfirmedBooking] = useState<BookingConfirmation | null>(null);
+  const [processingStage, setProcessingStage] = useState(1);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [priceLockSeconds, setPriceLockSeconds] = useState(600); // 10 minutes price lock
 
   // Flight search params
   const [origin, setOrigin] = useState('DEL');
@@ -144,12 +182,123 @@ export const Screen19_CompareAndBook: React.FC = () => {
         target_url: option.booking_url
       });
 
+      setActiveBookingSession({
+        option,
+        type,
+        reval
+      });
+      setCheckoutStep('review');
       setRevalidationModal(reval);
+      setPriceLockSeconds(600);
     } catch (e) {
       window.open(option.booking_url, '_blank', 'noopener,noreferrer');
     } finally {
       setRevalidatingId(null);
     }
+  };
+
+  // 10-minute price lock countdown
+  useEffect(() => {
+    if (!revalidationModal || checkoutStep === 'confirmed') return;
+    const interval = setInterval(() => {
+      setPriceLockSeconds(prev => (prev > 0 ? prev - 1 : 600));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [revalidationModal, checkoutStep]);
+
+  // Instant in-app fast payment simulation
+  const handleConfirmPayment = () => {
+    if (!activeBookingSession) return;
+    setCheckoutStep('processing');
+    setProcessingStage(1);
+
+    setTimeout(() => {
+      setProcessingStage(2);
+    }, 700);
+
+    setTimeout(() => {
+      setProcessingStage(3);
+    }, 1400);
+
+    setTimeout(() => {
+      const isFlight = activeBookingSession.type === 'flight';
+      const flightOpt = isFlight ? (activeBookingSession.option as UnifiedFlightOption) : null;
+      const hotelOpt = !isFlight ? (activeBookingSession.option as UnifiedHotelOption) : null;
+      const verifiedPrice = activeBookingSession.reval.current_price_inr;
+      const finalPrice = Math.max(1, verifiedPrice - 1000);
+
+      const booking: BookingConfirmation = {
+        bookingId: `${activeBookingSession.reval.provider_code.toUpperCase().slice(0, 3)}-DXB-${Math.floor(10000 + Math.random() * 90000)}`,
+        pnr: `${flightOpt ? flightOpt.flight_number.split(' ')[0] : 'DXB'}-${Math.floor(100000 + Math.random() * 900000)}`,
+        passengerName: passengerName || 'Ranjeet Kumar',
+        tripTitle: isFlight 
+          ? `Flight: ${flightOpt?.origin_code || 'DEL'} to ${flightOpt?.destination_code || 'DXB'}` 
+          : `Hotel Stay: ${hotelOpt?.name || 'Rove Downtown Dubai'}`,
+        origin: flightOpt?.origin_code || 'DEL',
+        destination: flightOpt?.destination_code || hotelOpt?.city || 'DXB',
+        dates: isFlight ? `${departureDate}` : `${checkinDate} - ${checkoutDate}`,
+        flightDetails: {
+          id: flightOpt?.id || 'fl-confirmed',
+          airline: flightOpt?.airline || 'Emirates',
+          airlineCode: flightOpt?.airline_code || 'EK',
+          flightNumber: flightOpt?.flight_number || 'EK-571',
+          origin: {
+            city: flightOpt?.origin_city || 'Delhi',
+            airport: 'Indira Gandhi International Airport',
+            code: flightOpt?.origin_code || 'DEL',
+            terminal: 'Terminal 3'
+          },
+          destination: {
+            city: flightOpt?.destination_city || 'Dubai',
+            airport: 'Dubai International Airport',
+            code: flightOpt?.destination_code || 'DXB',
+            terminal: 'Terminal 3'
+          },
+          departureTime: flightOpt?.departure_time || '09:45 AM',
+          arrivalTime: flightOpt?.arrival_time || '01:20 PM',
+          duration: flightOpt?.duration || '4h 15m',
+          stops: flightOpt?.stops || 0,
+          priceINR: finalPrice,
+          cabinClass: (flightOpt?.cabin_class as any) || 'Economy',
+          baggage: flightOpt?.baggage || '30kg Check-in + 7kg Cabin',
+          refundable: flightOpt?.refundable ?? true
+        },
+        hotelDetails: {
+          id: hotelOpt?.id || 'ht-confirmed',
+          name: hotelOpt?.name || 'Rove Downtown Dubai',
+          city: hotelOpt?.city || 'Dubai',
+          location: hotelOpt?.location || 'Downtown Dubai',
+          roomType: hotelOpt?.room_type || 'Rover Room (Burj Khalifa View)',
+          rating: hotelOpt?.rating || 4.8,
+          reviewCount: hotelOpt?.reviews_count || 1240,
+          stars: hotelOpt?.stars || 4,
+          pricePerNightINR: hotelOpt?.price_per_night_inr || 4500,
+          imageUrl: hotelOpt?.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80',
+          amenities: hotelOpt?.amenities || ['Free Wi-Fi', 'Breakfast Included', 'Pool View'],
+          distanceToCenter: '0.8 km',
+          freeCancellation: hotelOpt?.free_cancellation ?? true,
+          breakfastIncluded: hotelOpt?.breakfast_included ?? true
+        },
+        totalPaidINR: finalPrice,
+        currency: currency || 'INR',
+        bookingDate: new Date().toISOString().split('T')[0],
+        paymentMethod: paymentMethod === 'upi' ? 'UPI' : paymentMethod === 'card' ? 'Card' : 'NetBanking',
+        status: 'Confirmed'
+      };
+
+      setConfirmedBooking(booking);
+      addBookingToHistory(booking);
+      setCheckoutStep('confirmed');
+
+      try {
+        confetti({
+          particleCount: 130,
+          spread: 85,
+          origin: { y: 0.6 },
+          colors: ['#7956f5', '#10b981', '#3b82f6', '#f59e0b']
+        });
+      } catch (err) {}
+    }, 2200);
   };
 
   return (
@@ -715,56 +864,483 @@ export const Screen19_CompareAndBook: React.FC = () => {
         </div>
       )}
 
-      {/* Pre-Booking Revalidation Modal */}
-      {revalidationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 space-y-5 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
+      {/* Enterprise Pre-Booking Revalidation & Fast Checkout Modal */}
+      {revalidationModal && activeBookingSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-left relative max-h-[92vh] overflow-y-auto custom-scrollbar">
+            
+            {/* Modal Top Bar */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">
+                  {activeBookingSession.reval.provider_code} Verified GDS Inventory
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  Fare Locked
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg">
+                  <Clock className="w-3 h-3" />
+                  <span>
+                    {Math.floor(priceLockSeconds / 60).toString().padStart(2, '0')}:{(priceLockSeconds % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setRevalidationModal(null)}
+                  className="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                Inventory & Rate Confirmed!
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {revalidationModal.message}
-              </p>
-            </div>
+            {/* ── STEP 1: REVIEW & INVENTORY CONFIRMATION ──────────────── */}
+            {checkoutStep === 'review' && (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-midnight-navy dark:text-white">
+                      Inventory & Rate Confirmed!
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                      {activeBookingSession.reval.message}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 text-left text-xs space-y-2 border border-slate-100 dark:border-slate-700">
-              <div className="flex justify-between">
-                <span className="text-slate-400">OTA Provider:</span>
-                <span className="font-bold text-slate-800 dark:text-white capitalize">{revalidationModal.provider_code}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Verified Fare:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatPrice(revalidationModal.current_price_inr)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Inventory Status:</span>
-                <span className="font-semibold text-blue-600">Reserved for Checkout</span>
-              </div>
-            </div>
+                {/* Offer Details Card */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                  {activeBookingSession.type === 'flight' ? (
+                    <div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-midnight-navy dark:text-white flex items-center gap-1.5">
+                          <Plane className="w-3.5 h-3.5 text-blue-500" />
+                          {(activeBookingSession.option as UnifiedFlightOption).airline} • {(activeBookingSession.option as UnifiedFlightOption).flight_number}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-ai-purple uppercase">
+                          {(activeBookingSession.option as UnifiedFlightOption).cabin_class}
+                        </span>
+                      </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setRevalidationModal(null)}
-                className="w-1/2 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300"
-              >
-                Close
-              </button>
-              <a
-                href={revalidationModal.booking_redirect_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setRevalidationModal(null)}
-                className="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20"
-              >
-                Proceed to Checkout
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
+                      <div className="flex items-center justify-between my-2 py-2 border-y border-slate-200/60 dark:border-slate-700/60">
+                        <div>
+                          <div className="text-base font-black text-midnight-navy dark:text-white">
+                            {(activeBookingSession.option as UnifiedFlightOption).origin_code}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            {(activeBookingSession.option as UnifiedFlightOption).departure_time}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] font-semibold text-slate-400">
+                            {(activeBookingSession.option as UnifiedFlightOption).duration}
+                          </span>
+                          <div className="w-20 h-0.5 bg-blue-500/40 relative my-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 absolute -top-0.5 left-1/2 -translate-x-1/2" />
+                          </div>
+                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                            {(activeBookingSession.option as UnifiedFlightOption).stops === 0 ? 'Non-Stop Direct' : '1-Stop'}
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-base font-black text-midnight-navy dark:text-white">
+                            {(activeBookingSession.option as UnifiedFlightOption).destination_code}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            {(activeBookingSession.option as UnifiedFlightOption).arrival_time}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <Luggage className="w-3.5 h-3.5 text-travel-teal" />
+                          <span>{(activeBookingSession.option as UnifiedFlightOption).baggage}</span>
+                        </span>
+                        <span>{(activeBookingSession.option as UnifiedFlightOption).cancellation_policy}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-midnight-navy dark:text-white">
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-blue-500" />
+                          {(activeBookingSession.option as UnifiedHotelOption).name}
+                        </span>
+                        <span className="text-amber-500 font-bold">
+                          ★ {(activeBookingSession.option as UnifiedHotelOption).rating}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        {(activeBookingSession.option as UnifiedHotelOption).room_type} • {(activeBookingSession.option as UnifiedHotelOption).city}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        <span>✓ Free Breakfast</span>
+                        <span>✓ Free Cancellation</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                    <span>Base Fare & Airline Charges:</span>
+                    <span>{formatPrice(activeBookingSession.reval.current_price_inr - 1950)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                    <span>Airport Taxes & Fuel Surcharge:</span>
+                    <span>{formatPrice(1950)}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span>TravelMate Copilot Promo (COPILOT1000):</span>
+                    <span>-₹1,000</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-baseline">
+                    <span className="font-extrabold text-midnight-navy dark:text-white text-sm">
+                      Total Payable Amount:
+                    </span>
+                    <span className="text-base font-black text-ai-purple">
+                      {formatPrice(Math.max(1, activeBookingSession.reval.current_price_inr - 1000))}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dual Action Options */}
+                <div className="space-y-2 pt-1">
+                  <button
+                    onClick={() => setCheckoutStep('payment')}
+                    className="w-full py-3 bg-gradient-to-r from-ai-purple to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
+                  >
+                    <Zap className="w-4 h-4 fill-current text-amber-300" />
+                    <span>Instant Fast Checkout & Issue E-Ticket</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  <a
+                    href={activeBookingSession.reval.booking_redirect_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setRevalidationModal(null)}
+                    className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 transition text-center"
+                  >
+                    <span>Or Complete on {activeBookingSession.reval.provider_code.toUpperCase()}.com (Official Portal)</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 2: FAST-TRACK PAYMENT & PASSENGER DETAILS ───────── */}
+            {checkoutStep === 'payment' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setCheckoutStep('review')}
+                    className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-ai-purple transition"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Back to Summary</span>
+                  </button>
+                  <span className="text-xs font-black text-ai-purple">
+                    Payable: {formatPrice(Math.max(1, activeBookingSession.reval.current_price_inr - 1000))}
+                  </span>
+                </div>
+
+                {/* Passenger Form */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Primary Passenger Vault:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label className="text-[10px] text-slate-400 font-semibold block mb-0.5">Full Name (as per Passport)</label>
+                      <input
+                        type="text"
+                        value={passengerName}
+                        onChange={e => setPassengerName(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-midnight-navy dark:text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-slate-400 font-semibold block mb-0.5">Passport / Gov ID No.</label>
+                      <input
+                        type="text"
+                        value={passengerGovId}
+                        onChange={e => setPassengerGovId(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-midnight-navy dark:text-white font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Method Selector */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Select Instant Payment Method:
+                  </span>
+                  <div className="grid grid-cols-4 gap-1.5 text-xs font-bold">
+                    <button
+                      onClick={() => setPaymentMethod('upi')}
+                      className={`p-2 rounded-xl border transition flex flex-col items-center gap-1 ${
+                        paymentMethod === 'upi'
+                          ? 'border-ai-purple bg-purple-500/10 text-ai-purple'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <QrCode className="w-4 h-4" />
+                      <span className="text-[10px]">UPI & QR</span>
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod('gpay')}
+                      className={`p-2 rounded-xl border transition flex flex-col items-center gap-1 ${
+                        paymentMethod === 'gpay'
+                          ? 'border-ai-purple bg-purple-500/10 text-ai-purple'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4" />
+                      <span className="text-[10px]">GPay / PhonePe</span>
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod('card')}
+                      className={`p-2 rounded-xl border transition flex flex-col items-center gap-1 ${
+                        paymentMethod === 'card'
+                          ? 'border-ai-purple bg-purple-500/10 text-ai-purple'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span className="text-[10px]">Debit/Credit</span>
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod('netbanking')}
+                      className={`p-2 rounded-xl border transition flex flex-col items-center gap-1 ${
+                        paymentMethod === 'netbanking'
+                          ? 'border-ai-purple bg-purple-500/10 text-ai-purple'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="text-[10px]">NetBanking</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Payment Detail Section */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70">
+                  {paymentMethod === 'upi' && (
+                    <div className="flex items-center gap-4">
+                      {/* Dynamic Scannable QR Code */}
+                      <div className="p-2 bg-white rounded-xl shadow-md shrink-0 border border-slate-200 flex flex-col items-center">
+                        <div className="w-20 h-20 bg-slate-900 rounded-lg p-1 flex items-center justify-center">
+                          <QrCode className="w-16 h-16 text-white" />
+                        </div>
+                        <span className="text-[8px] font-bold text-slate-500 mt-1">BHIM UPI Verified</span>
+                      </div>
+
+                      <div className="space-y-1.5 flex-1 text-xs">
+                        <div className="font-extrabold text-midnight-navy dark:text-white">
+                          Scan with any UPI App
+                        </div>
+                        <p className="text-[10px] text-slate-400">
+                          Google Pay, PhonePe, Paytm, BHIM, Cred supported.
+                        </p>
+                        <div className="flex items-center gap-1 text-[10px] font-mono bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                          <span>travelmate.pay@icici</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText('travelmate.pay@icici');
+                              setCopiedUpi(true);
+                              setTimeout(() => setCopiedUpi(false), 2000);
+                            }}
+                            className="ml-auto text-ai-purple hover:underline font-bold"
+                          >
+                            {copiedUpi ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'gpay' && (
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                        Choose 1-Tap Mobile Wallet:
+                      </span>
+                      <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+                        <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 text-blue-600">
+                          <Smartphone className="w-3.5 h-3.5" />
+                          <span>Google Pay</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 text-purple-600">
+                          <Zap className="w-3.5 h-3.5" />
+                          <span>PhonePe</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 text-sky-500">
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>Paytm UPI</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'card' && (
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-semibold block mb-0.5">Card Number</label>
+                        <input
+                          type="text"
+                          value={cardNumber}
+                          onChange={e => setCardNumber(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-midnight-navy dark:text-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-slate-400 font-semibold block mb-0.5">Expiry</label>
+                          <input
+                            type="text"
+                            value={cardExpiry}
+                            onChange={e => setCardExpiry(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-midnight-navy dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-slate-400 font-semibold block mb-0.5">CVV / CVC</label>
+                          <input
+                            type="password"
+                            value={cardCvv}
+                            onChange={e => setCardCvv(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-midnight-navy dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'netbanking' && (
+                    <div className="grid grid-cols-4 gap-1.5 text-[11px] font-bold text-center">
+                      <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-ai-purple cursor-pointer">HDFC</div>
+                      <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-ai-purple cursor-pointer">ICICI</div>
+                      <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-ai-purple cursor-pointer">SBI</div>
+                      <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-ai-purple cursor-pointer">Axis</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Pay & Confirm CTA */}
+                <button
+                  onClick={handleConfirmPayment}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>
+                    Authorize Payment & Issue Ticket ({formatPrice(Math.max(1, activeBookingSession.reval.current_price_inr - 1000))})
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* ── STEP 3: PROCESSING STAGES ────────────────────────────── */}
+            {checkoutStep === 'processing' && (
+              <div className="py-8 text-center space-y-4">
+                <div className="w-16 h-16 rounded-3xl bg-purple-500/10 text-ai-purple flex items-center justify-center mx-auto animate-pulse">
+                  <RefreshCw className="w-8 h-8 animate-spin" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-black text-midnight-navy dark:text-white">
+                    Processing Reservation & E-Ticket
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {processingStage === 1 && `Verifying live fare with ${activeBookingSession.reval.provider_code.toUpperCase()} GDS Engine...`}
+                    {processingStage === 2 && 'Allocating Airline PNR & Biometric Smart E-Gate Token...'}
+                    {processingStage === 3 && 'Cryptographically sealing E-Ticket & Boarding Pass...'}
+                  </p>
+                </div>
+                <div className="w-48 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto overflow-hidden">
+                  <div
+                    className="h-full bg-ai-purple transition-all duration-700"
+                    style={{ width: `${processingStage * 33}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 4: CONFIRMED & DOWNLOAD E-TICKET ─────────────────── */}
+            {checkoutStep === 'confirmed' && confirmedBooking && (
+              <div className="space-y-4 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-black text-midnight-navy dark:text-white">
+                    Booking Confirmed!
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Your reservation has been confirmed through {activeBookingSession.reval.provider_code.toUpperCase()} GDS inventory.
+                  </p>
+                </div>
+
+                {/* Confirmed Details Badge */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 text-left text-xs space-y-2 border border-slate-200 dark:border-slate-700">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Booking Reference:</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-white">{confirmedBooking.bookingId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Airline PNR:</span>
+                    <span className="font-mono font-bold text-ai-purple">{confirmedBooking.pnr}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Passenger Name:</span>
+                    <span className="font-bold text-slate-800 dark:text-white">{confirmedBooking.passengerName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">DXB Smart Gates:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">✓ PASS APPROVED</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-1">
+                  <button
+                    onClick={() => generateETicketPDF(confirmedBooking)}
+                    className="w-full py-3 bg-ai-purple hover:bg-ai-purple-light text-white font-extrabold text-xs rounded-xl shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download Official E-Ticket & Boarding Pass (PDF)</span>
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setRevalidationModal(null);
+                        setCurrentScreen('15-wallet');
+                      }}
+                      className="py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-midnight-navy dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    >
+                      View in My Trips & Wallet
+                    </button>
+                    <button
+                      onClick={() => setRevalidationModal(null)}
+                      className="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    >
+                      Done / Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

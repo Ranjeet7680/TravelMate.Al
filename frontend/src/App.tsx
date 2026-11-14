@@ -99,11 +99,11 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#f5f7fc] dark:bg-[#0a0f1d] text-[#101d42] dark:text-[#f8fafc]">
+    <div className="h-screen flex flex-col font-sans bg-[#f5f7fc] dark:bg-[#0a0f1d] text-[#101d42] dark:text-[#f8fafc] overflow-hidden">
       {/* Main Workspace with Left Sidebar & Content View */}
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block shrink-0">
+        <div className="hidden lg:block shrink-0 h-full">
           <Sidebar />
         </div>
 
