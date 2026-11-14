@@ -383,3 +383,68 @@ export interface RevalidationResponse {
   message: string;
 }
 
+export type TourismCategory = 
+  | 'wonder'
+  | 'monument'
+  | 'museum'
+  | 'beach'
+  | 'mountain'
+  | 'wildlife'
+  | 'waterfall'
+  | 'religious'
+  | 'adventure'
+  | 'shopping'
+  | 'food'
+  | 'nature';
+
+export interface GlobalTourismItem {
+  id: string;
+  name: string;
+  local_name?: string;
+  city: string;
+  state?: string;
+  country: string;
+  country_code: string;
+  continent: string;
+  latitude: number;
+  longitude: number;
+  category: TourismCategory;
+  rating: number;
+  reviews_count: number;
+  images: string[];
+  description: string;
+  opening_hours: string;
+  entry_fee_inr: number;
+  best_season: string;
+  visit_duration: string;
+  nearby_attractions: string[];
+  nearby_hotels: string[];
+  nearby_restaurants: string[];
+  transport_options: string;
+  estimated_daily_budget_inr: number;
+  family_friendly: boolean;
+  unesco_heritage: boolean;
+  tags: string[];
+  distance_from_user_km?: number;
+}
+
+export interface MultiStopRouteLeg {
+  from_id: string;
+  from_name: string;
+  to_id: string;
+  to_name: string;
+  distance_km: number;
+  recommended_mode: string;
+  estimated_travel_hours: number;
+  estimated_cost_inr: number;
+}
+
+export interface MultiStopRoutePlan {
+  total_waypoints: number;
+  total_distance_km: number;
+  estimated_transit_hours: number;
+  estimated_transit_cost_inr: number;
+  legs: MultiStopRouteLeg[];
+}
+
+

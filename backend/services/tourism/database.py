@@ -1,0 +1,882 @@
+"""
+TravelMate.AI Global Tourism Database
+Curated worldwide destinations across 6 continents with GPS coordinates,
+photos, descriptions, category tagging, ratings, and practical visiting data.
+"""
+
+from typing import List, Dict, Any, Optional
+
+GLOBAL_DESTINATIONS: List[Dict[str, Any]] = [
+    # ── ASIA ──
+    {
+        "id": "burj-khalifa-dubai",
+        "name": "Burj Khalifa & Downtown Dubai",
+        "local_name": "برج خليفة",
+        "city": "Dubai",
+        "state": "Dubai",
+        "country": "United Arab Emirates",
+        "country_code": "AE",
+        "continent": "Asia",
+        "latitude": 25.1972,
+        "longitude": 55.2744,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 48200,
+        "images": [
+            "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Standing at an awe-inspiring 828 meters, Burj Khalifa is the tallest building on planet Earth. Featuring observation decks on levels 124, 125, and 148, visitors gaze over the glittering Arabian Gulf and desert skyline. Anchored beside the world's largest shopping destination, The Dubai Mall, and the iconic Dubai Fountain spectacle.",
+        "opening_hours": "08:30 - 23:00 Daily",
+        "entry_fee_inr": 3800.0,
+        "best_season": "Nov - Mar",
+        "visit_duration": "3 - 4 hours",
+        "nearby_attractions": ["Dubai Mall", "Dubai Fountain Lake", "Dubai Opera", "Museum of the Future"],
+        "nearby_hotels": ["Armani Hotel Dubai", "The Address Downtown", "Rove Downtown"],
+        "nearby_restaurants": ["Atmosphere Level 122", "Thiptara", "Zuma Dubai"],
+        "transport_options": "Direct via Dubai Metro Red Line (Burj Khalifa/Dubai Mall Station)",
+        "estimated_daily_budget_inr": 8500.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Skyline", "Iconic", "Observation Deck", "Shopping", "Architecture"]
+    },
+    {
+        "id": "taj-mahal-agra",
+        "name": "Taj Mahal",
+        "local_name": "ताज महल",
+        "city": "Agra",
+        "state": "Uttar Pradesh",
+        "country": "India",
+        "country_code": "IN",
+        "continent": "Asia",
+        "latitude": 27.1751,
+        "longitude": 78.0421,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 68400,
+        "images": [
+            "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "An immense ivory-white marble mausoleum on the south bank of the Yamuna river, commissioned in 1632 by the Mughal emperor Shah Jahan to house the tomb of his favourite wife, Mumtaz Mahal. A universal jewel of Muslim art in India and one of the Seven Wonders of the Modern World.",
+        "opening_hours": "06:00 - 18:30 (Closed Fridays)",
+        "entry_fee_inr": 50.0,
+        "best_season": "Oct - Mar",
+        "visit_duration": "3 - 4 hours",
+        "nearby_attractions": ["Agra Fort", "Mehtab Bagh", "Fatehpur Sikri"],
+        "nearby_hotels": ["The Oberoi Amarvilas", "ITC Mughal", "Taj Hotel & Convention"],
+        "nearby_restaurants": ["Peshawri", "Pinch of Spice", "Dasaprakash"],
+        "transport_options": "Gatimaan Express / Vande Bharat Express from New Delhi (1h 40m)",
+        "estimated_daily_budget_inr": 3500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Wonder of the World", "Heritage", "Mughal Architecture"]
+    },
+    {
+        "id": "great-wall-china",
+        "name": "The Great Wall of China (Mutianyu)",
+        "local_name": "万​​里长城",
+        "city": "Beijing",
+        "state": "Beijing",
+        "country": "China",
+        "country_code": "CN",
+        "continent": "Asia",
+        "latitude": 40.4319,
+        "longitude": 116.5704,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 52100,
+        "images": [
+            "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1547150492-da7ff1742941?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Snaking across thousands of miles of rugged ridgelines, the Great Wall of China represents one of humanity's greatest architectural and defense feats. The Mutianyu section is famous for its majestic watchtowers, pine forests, cable car ascents, and exciting toboggan descent.",
+        "opening_hours": "07:30 - 17:30 Daily",
+        "entry_fee_inr": 550.0,
+        "best_season": "Apr - May & Sep - Nov",
+        "visit_duration": "Half Day to Full Day",
+        "nearby_attractions": ["Forbidden City", "Summer Palace", "Temple of Heaven"],
+        "nearby_hotels": ["Brickyard Retreat Mutianyu", "Waldorf Astoria Beijing"],
+        "nearby_restaurants": ["Schoolhouse Mutianyu", "Da Dong Roast Duck"],
+        "transport_options": "Tourist Shuttle Bus from Dongzhimen Station or Private Hire (1.5 hours)",
+        "estimated_daily_budget_inr": 5000.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Ancient Defense", "Hiking", "Panoramas"]
+    },
+    {
+        "id": "mount-fuji-japan",
+        "name": "Mount Fuji & Lake Kawaguchiko",
+        "local_name": "富士山",
+        "city": "Fujikawaguchiko",
+        "state": "Yamanashi",
+        "country": "Japan",
+        "country_code": "JP",
+        "continent": "Asia",
+        "latitude": 35.3606,
+        "longitude": 138.7274,
+        "category": "mountain",
+        "rating": 4.8,
+        "reviews_count": 39500,
+        "images": [
+            "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Japan's sacred volcano and highest peak at 3,776 meters. Renowned for its perfectly symmetrical snow-capped cone, immortalized in Hokusai woodblock prints. Lake Kawaguchiko offers mirror reflections of Fuji, cherry blossom trails, and traditional hot spring onsens.",
+        "opening_hours": "24/7 (Climbing season: Jul - early Sep)",
+        "entry_fee_inr": 1100.0,
+        "best_season": "Mar - May & Oct - Nov",
+        "visit_duration": "1 - 2 Days",
+        "nearby_attractions": ["Chureito Pagoda", "Oshino Hakkai", "Fuji-Q Highland"],
+        "nearby_hotels": ["Hoshinoya Fuji", "Kozantei Ubuya", "Fuji View Hotel"],
+        "nearby_restaurants": ["Hoto Fudo", "Sanrokuen", "Tempura Restaurant Ninja"],
+        "transport_options": "Fuji Excursion Direct Express Train from Shinjuku Tokyo (1h 50m)",
+        "estimated_daily_budget_inr": 8200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Sacred Mountain", "Cherry Blossoms", "Onsen", "Photography"]
+    },
+    {
+        "id": "angkor-wat-cambodia",
+        "name": "Angkor Wat Temple Complex",
+        "local_name": "អង្គរវត្ត",
+        "city": "Siem Reap",
+        "state": "Siem Reap",
+        "country": "Cambodia",
+        "country_code": "KH",
+        "continent": "Asia",
+        "latitude": 13.4125,
+        "longitude": 103.8670,
+        "category": "religious",
+        "rating": 4.9,
+        "reviews_count": 41200,
+        "images": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1544077960-604201fe74bc?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The largest religious monument in the world, spanning over 400 acres. Originally constructed in the early 12th century as a Hindu temple for the Khmer Empire, it gradually transformed into a Buddhist temple. Renowned for its lotus towers and bas-relief carvings.",
+        "opening_hours": "05:00 - 17:30 Daily (Sunrise viewings)",
+        "entry_fee_inr": 3100.0,
+        "best_season": "Nov - Feb",
+        "visit_duration": "Full Day or 3-Day Pass",
+        "nearby_attractions": ["Bayon Temple", "Ta Prohm (Tomb Raider)", "Banteay Srei"],
+        "nearby_hotels": ["Amansara Siem Reap", "Raffles Grand Hotel d'Angkor", "Phum Baitang"],
+        "nearby_restaurants": ["Cuisine Wat Damnak", "Malis Restaurant", "The Sugar Palm"],
+        "transport_options": "Tuk-tuk or Private AC Van hire from Siem Reap town (20 mins)",
+        "estimated_daily_budget_inr": 4200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Khmer Empire", "Sunrise", "Ancient Temples"]
+    },
+    {
+        "id": "petra-jordan",
+        "name": "Petra (The Rose City)",
+        "local_name": "البتراء",
+        "city": "Wadi Musa",
+        "state": "Ma'an",
+        "country": "Jordan",
+        "country_code": "JO",
+        "continent": "Asia",
+        "latitude": 30.3285,
+        "longitude": 35.4444,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 33900,
+        "images": [
+            "https://images.unsplash.com/photo-1579606032834-c901be802fe6?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The lost Nabataean capital carved directly into pink sandstone cliffs over 2,000 years ago. Approached through the narrow Siq canyon, visitors emerge before the breathtaking Treasury (Al-Khazneh), followed by royal tombs and the colossal Monastery (Ad-Deir).",
+        "opening_hours": "06:00 - 18:00 (Summer) / 06:00 - 16:00 (Winter)",
+        "entry_fee_inr": 5900.0,
+        "best_season": "Mar - May & Sep - Nov",
+        "visit_duration": "1 - 2 Days",
+        "nearby_attractions": ["Wadi Rum Desert", "Little Petra", "Dead Sea"],
+        "nearby_hotels": ["Mövenpick Resort Petra", "Petra Marriott Hotel", "The Old Village Hotel"],
+        "nearby_restaurants": ["Al Wadi Restaurant", "Red Cave Restaurant", "My Mom's Recipe"],
+        "transport_options": "JETT Bus or Private Tourist Taxi from Amman (3 hours)",
+        "estimated_daily_budget_inr": 7200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Wonder of the World", "Archaeology", "Desert", "Ancient Nabataean"]
+    },
+    {
+        "id": "bali-ubud-uluwatu",
+        "name": "Bali (Ubud & Uluwatu)",
+        "local_name": "Pulau Bali",
+        "city": "Ubud & Badung",
+        "state": "Bali",
+        "country": "Indonesia",
+        "country_code": "ID",
+        "continent": "Asia",
+        "latitude": -8.5069,
+        "longitude": 115.2625,
+        "category": "beach",
+        "rating": 4.8,
+        "reviews_count": 47800,
+        "images": [
+            "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The Island of the Gods balances emerald Tegallalang rice terraces, sacred monkey forests, cliffside Hindu sea temples at Uluwatu with traditional Kecak fire dances, and world-class surfing beaches across Seminyak and Canggu.",
+        "opening_hours": "Temples: 07:00 - 19:00 Daily",
+        "entry_fee_inr": 350.0,
+        "best_season": "Apr - Oct (Dry Season)",
+        "visit_duration": "5 - 7 Days",
+        "nearby_attractions": ["Tegallalang Rice Terrace", "Uluwatu Temple", "Tanah Lot", "Mount Batur"],
+        "nearby_hotels": ["Four Seasons Resort Bali at Sayan", "Alila Villas Uluwatu", "Padma Resort Ubud"],
+        "nearby_restaurants": ["Locavore Ubud", "Bebek Bengil", "Single Fin Uluwatu"],
+        "transport_options": "Private Driver Hire (~₹2,200/day) or Scooter Rentals",
+        "estimated_daily_budget_inr": 3800.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Tropical Island", "Surfing", "Temples", "Rice Terraces", "Wellness"]
+    },
+
+    # ── EUROPE ──
+    {
+        "id": "eiffel-tower-paris",
+        "name": "Eiffel Tower & Champ de Mars",
+        "local_name": "La Tour Eiffel",
+        "city": "Paris",
+        "state": "Île-de-France",
+        "country": "France",
+        "country_code": "FR",
+        "continent": "Europe",
+        "latitude": 48.8584,
+        "longitude": 2.2945,
+        "category": "wonder",
+        "rating": 4.8,
+        "reviews_count": 71200,
+        "images": [
+            "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Gustave Eiffel's masterpiece of wrought-iron lattice was erected for the 1889 Exposition Universelle. Standing 330 meters high along the Seine river, its observation summits deliver 360-degree vistas across Montmartre, the Arc de Triomphe, and the Louvre.",
+        "opening_hours": "09:30 - 23:45 Daily",
+        "entry_fee_inr": 2800.0,
+        "best_season": "Apr - Jun & Sep - Nov",
+        "visit_duration": "2 - 3 hours",
+        "nearby_attractions": ["Louvre Museum", "Arc de Triomphe", "Seine River Cruise", "Musée d'Orsay"],
+        "nearby_hotels": ["Shangri-La Paris", "Hôtel Plaza Athénée", "Pullman Paris Tour Eiffel"],
+        "nearby_restaurants": ["Le Jules Verne (Tower Level 2)", "Café de Flore", "Les Ombres"],
+        "transport_options": "Metro Line 6 (Bir-Hakeim) or Line 9 (Trocadéro)",
+        "estimated_daily_budget_inr": 9500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Paris Landmark", "Romance", "Observation Deck", "Seine River"]
+    },
+    {
+        "id": "colosseum-rome",
+        "name": "Colosseum & Roman Forum",
+        "local_name": "Colosseo e Foro Romano",
+        "city": "Rome",
+        "state": "Lazio",
+        "country": "Italy",
+        "country_code": "IT",
+        "continent": "Europe",
+        "latitude": 41.8902,
+        "longitude": 12.4922,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 64300,
+        "images": [
+            "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The largest amphitheatre ever built, inaugurated in 80 AD under Emperor Titus. Capable of seating 50,000 spectators for gladiatorial combats and public spectacles. Connected to the ancient political and civic epicentre of the Roman Empire at the Forum.",
+        "opening_hours": "09:00 - 19:15 Daily",
+        "entry_fee_inr": 2200.0,
+        "best_season": "Apr - May & Oct - Nov",
+        "visit_duration": "3 - 4 hours",
+        "nearby_attractions": ["Vatican City & St. Peter's", "Trevi Fountain", "Pantheon"],
+        "nearby_hotels": ["Hotel Palazzo Manfredi", "Hassler Roma", "The St. Regis Rome"],
+        "nearby_restaurants": ["Aroma Restaurant", "Armando al Pantheon", "Ristorante Da Enzo"],
+        "transport_options": "Rome Metro Line B (Colosseo Station)",
+        "estimated_daily_budget_inr": 8800.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Ancient Rome", "Gladiators", "UNESCO", "Imperial History"]
+    },
+    {
+        "id": "sagrada-familia-barcelona",
+        "name": "Basílica de la Sagrada Família",
+        "local_name": "Basílica de la Sagrada Família",
+        "city": "Barcelona",
+        "state": "Catalonia",
+        "country": "Spain",
+        "country_code": "ES",
+        "continent": "Europe",
+        "latitude": 41.4036,
+        "longitude": 2.1744,
+        "category": "monument",
+        "rating": 4.9,
+        "reviews_count": 59100,
+        "images": [
+            "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1562883676-8c7feb83f09b?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Antoni Gaudí's unfinished Catalan Modernism masterpiece, under construction since 1882. Its organic stone spires represent Christ and the Apostles, while the interior is bathed in celestial kaleidoscopic rainbows projected by monumental stained-glass windows.",
+        "opening_hours": "09:00 - 18:00 (Nov - Feb) / 09:00 - 20:00 (Apr - Sep)",
+        "entry_fee_inr": 2900.0,
+        "best_season": "May - Jun & Sep - Oct",
+        "visit_duration": "2 - 3 hours",
+        "nearby_attractions": ["Park Güell", "Casa Batlló", "Gothic Quarter", "La Rambla"],
+        "nearby_hotels": ["Hotel Arts Barcelona", "Mandarin Oriental Barcelona", "Radisson Blu 1882"],
+        "nearby_restaurants": ["Disfrutar Barcelona", "Can Solé", "Tapeo Born"],
+        "transport_options": "Barcelona Metro L2 & L5 (Sagrada Família Station)",
+        "estimated_daily_budget_inr": 8200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Gaudí", "Modernism", "Cathedral", "Architecture", "Stained Glass"]
+    },
+    {
+        "id": "santorini-oia-greece",
+        "name": "Santorini & Oia Caldera",
+        "local_name": "Σαντορίνη",
+        "city": "Oia",
+        "state": "Cyclades",
+        "country": "Greece",
+        "country_code": "GR",
+        "continent": "Europe",
+        "latitude": 36.4618,
+        "longitude": 25.3753,
+        "category": "beach",
+        "rating": 4.9,
+        "reviews_count": 38400,
+        "images": [
+            "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The dramatic volcanic island in the southern Aegean Sea famous for whitewashed cliffside villages, cobalt blue domes, volcanic black and red sand beaches, and the most celebrated sunsets in Europe over the sunken caldera.",
+        "opening_hours": "Open 24/7 (Village walks)",
+        "entry_fee_inr": 0.0,
+        "best_season": "May - Oct",
+        "visit_duration": "3 - 5 Days",
+        "nearby_attractions": ["Red Beach", "Akrotiri Archaeological Site", "Fira to Oia Hike"],
+        "nearby_hotels": ["Canaves Oia Suites", "Grace Hotel Santorini", "Mystique Resort"],
+        "nearby_restaurants": ["Lycabettus Restaurant", "Metaxi Mas", "Roka Oia"],
+        "transport_options": "High-Speed Ferry from Athens Piraeus or Direct Flight to JTR Airport",
+        "estimated_daily_budget_inr": 11500.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Sunsets", "Caldera", "Honeymoon", "Greek Islands", "Blue Domes"]
+    },
+    {
+        "id": "swiss-alps-matterhorn",
+        "name": "The Matterhorn & Zermatt",
+        "local_name": "Das Matterhorn",
+        "city": "Zermatt",
+        "state": "Valais",
+        "country": "Switzerland",
+        "country_code": "CH",
+        "continent": "Europe",
+        "latitude": 45.9763,
+        "longitude": 7.7491,
+        "category": "mountain",
+        "rating": 4.9,
+        "reviews_count": 29800,
+        "images": [
+            "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The pyramid-shaped colossus of the Pennine Alps, rising to 4,478 meters on the Swiss-Italian border. Zermatt is a car-free alpine village with world-class skiing, the Gornergrat cogwheel railway, and mirror-still reflections in Riffelsee lake.",
+        "opening_hours": "Gornergrat Railway: 07:00 - 19:00 Daily",
+        "entry_fee_inr": 9200.0,
+        "best_season": "Jun - Sep (Hiking) / Dec - Apr (Skiing)",
+        "visit_duration": "2 - 4 Days",
+        "nearby_attractions": ["Gornergrat", "Glacier Paradise 3883m", "Riffelsee"],
+        "nearby_hotels": ["The Omnia Zermatt", "Mont Cervin Palace", "Riffelalp Resort 2222m"],
+        "nearby_restaurants": ["Chez Vrony", "Findlerhof", "After Seven"],
+        "transport_options": "Glacier Express or Matterhorn Gotthard Bahn Train to Zermatt",
+        "estimated_daily_budget_inr": 16000.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Swiss Alps", "Skiing", "Glacier", "Matterhorn", "Luxury Alpine"]
+    },
+
+    # ── AMERICAS ──
+    {
+        "id": "machu-picchu-peru",
+        "name": "Machu Picchu & Sacred Valley",
+        "local_name": "Machu Pikchu",
+        "city": "Cusco Region",
+        "state": "Urubamba",
+        "country": "Peru",
+        "country_code": "PE",
+        "continent": "South America",
+        "latitude": -13.1631,
+        "longitude": -72.5450,
+        "category": "wonder",
+        "rating": 4.9,
+        "reviews_count": 48900,
+        "images": [
+            "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1589802829985-817e51171b92?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The 15th-century Inca citadel situated on an emerald ridge 2,430 meters above sea level in the Andes. Preserving polished dry-stone agricultural terraces, temples dedicated to Inti the Sun God, and panoramic cloud-forest peaks.",
+        "opening_hours": "06:00 - 17:30 Daily (Timed circuits)",
+        "entry_fee_inr": 4200.0,
+        "best_season": "May - Oct (Dry Season)",
+        "visit_duration": "1 - 2 Days",
+        "nearby_attractions": ["Huayna Picchu Peak", "Ollantaytambo", "Cusco Historic Center"],
+        "nearby_hotels": ["Belmond Sanctuary Lodge", "Inkaterra Machu Picchu Pueblo", "Sumaq Hotel"],
+        "nearby_restaurants": ["Tinkuy Restaurant", "Indio Feliz Bistro", "Tree House Restaurant"],
+        "transport_options": "Inca Rail / PeruRail Vistadome train from Ollantaytambo to Aguas Calientes",
+        "estimated_daily_budget_inr": 7800.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Inca Citadel", "Andes", "Trekking", "Wonder of the World"]
+    },
+    {
+        "id": "grand-canyon-usa",
+        "name": "Grand Canyon National Park",
+        "local_name": "Grand Canyon",
+        "city": "Grand Canyon Village",
+        "state": "Arizona",
+        "country": "United States",
+        "country_code": "US",
+        "continent": "North America",
+        "latitude": 36.0544,
+        "longitude": -112.1401,
+        "category": "nature",
+        "rating": 4.9,
+        "reviews_count": 62400,
+        "images": [
+            "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Carved over millions of years by the Colorado River, the Grand Canyon extends 446 km long, up to 29 km wide, and over 1.8 km deep. Layered bands of red and ochre rock reveal billions of years of geological history under radiant desert sunsets.",
+        "opening_hours": "South Rim open 24/7/365",
+        "entry_fee_inr": 3100.0,
+        "best_season": "Mar - May & Sep - Nov",
+        "visit_duration": "1 - 3 Days",
+        "nearby_attractions": ["Horseshoe Bend", "Antelope Canyon", "Sedona Red Rocks"],
+        "nearby_hotels": ["El Tovar Hotel", "Bright Angel Lodge", "Grand Canyon Luxury Glamping"],
+        "nearby_restaurants": ["El Tovar Dining Room", "Arizona Steakhouse", "Bright Angel Bar"],
+        "transport_options": "Scenic Road Trip from Las Vegas (4 hours) or Phoenix (3.5 hours)",
+        "estimated_daily_budget_inr": 9200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "National Park", "Canyon", "Geology", "Hiking"]
+    },
+    {
+        "id": "christ-the-redeemer-brazil",
+        "name": "Christ the Redeemer & Corcovado",
+        "local_name": "Cristo Redentor",
+        "city": "Rio de Janeiro",
+        "state": "Rio de Janeiro",
+        "country": "Brazil",
+        "country_code": "BR",
+        "continent": "South America",
+        "latitude": -22.9519,
+        "longitude": -43.2105,
+        "category": "wonder",
+        "rating": 4.8,
+        "reviews_count": 45100,
+        "images": [
+            "https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The colossal 30-meter Art Deco statue of Jesus Christ atop the 700-meter Corcovado mountain, created by French sculptor Paul Landowski. With arms outstretched over Rio de Janeiro, Guanabara Bay, and Copacabana beach, it represents Brazilian hospitality.",
+        "opening_hours": "08:00 - 19:00 Daily",
+        "entry_fee_inr": 1800.0,
+        "best_season": "May - Oct",
+        "visit_duration": "2 - 3 hours",
+        "nearby_attractions": ["Sugarloaf Mountain", "Copacabana Beach", "Ipanema", "Tijuca Forest"],
+        "nearby_hotels": ["Belmond Copacabana Palace", "Hotel Fasano Rio de Janeiro", "Fairmont Copacabana"],
+        "nearby_restaurants": ["Fogo de Chão Botafogo", "Marius Degustare", "Confeitaria Colombo"],
+        "transport_options": "Historic Corcovado Cogwheel Railway through Tijuca National Park",
+        "estimated_daily_budget_inr": 6200.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Art Deco", "Wonder of the World", "Rio Views", "Harbour"]
+    },
+    {
+        "id": "iguazu-falls-argentina-brazil",
+        "name": "Iguazu Falls (Devil's Throat)",
+        "local_name": "Cataratas del Iguazú",
+        "city": "Puerto Iguazú",
+        "state": "Misiones",
+        "country": "Argentina",
+        "country_code": "AR",
+        "continent": "South America",
+        "latitude": -25.6953,
+        "longitude": -54.4367,
+        "category": "waterfall",
+        "rating": 4.9,
+        "reviews_count": 36700,
+        "images": [
+            "https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "A stupendous system of 275 individual waterfalls spanning 2.7 km along the Argentine-Brazilian border. The Devil's Throat (Garganta del Diablo) hurls torrents of water 82 meters downward into a permanent mist populated by toucans, coatis, and rainbows.",
+        "opening_hours": "08:00 - 18:00 Daily",
+        "entry_fee_inr": 2400.0,
+        "best_season": "Aug - Nov & Mar - May",
+        "visit_duration": "2 Full Days (both sides)",
+        "nearby_attractions": ["Iguazu National Park Brazil", "Parque das Aves", "Triple Frontier"],
+        "nearby_hotels": ["Gran Meliá Iguazú", "Hotel das Cataratas Belmond", "Loi Suites Iguazú"],
+        "nearby_restaurants": ["La Rueda 1975", "The Argentine Experience Iguazú", "Tarobá"],
+        "transport_options": "Rainforest Ecological Train to Devil's Throat Walkway",
+        "estimated_daily_budget_inr": 5800.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Giant Waterfalls", "Rainforest", "Rainbows"]
+    },
+
+    # ── AFRICA ──
+    {
+        "id": "pyramids-of-giza-egypt",
+        "name": "The Great Pyramids of Giza & Sphinx",
+        "local_name": "أهرامات الجيزة",
+        "city": "Giza",
+        "state": "Giza Governorate",
+        "country": "Egypt",
+        "country_code": "EG",
+        "continent": "Africa",
+        "latitude": 29.9792,
+        "longitude": 31.1342,
+        "category": "wonder",
+        "rating": 4.8,
+        "reviews_count": 58200,
+        "images": [
+            "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The oldest of the Ancient Seven Wonders of the World and the only one still largely intact. Built around 2560 BC as tombs for the Pharaohs Khufu, Khafre, and Menkaure, guarded by the mythical lion-bodied Great Sphinx.",
+        "opening_hours": "07:00 - 17:00 Daily",
+        "entry_fee_inr": 1800.0,
+        "best_season": "Oct - Apr",
+        "visit_duration": "Half Day to Full Day",
+        "nearby_attractions": ["Grand Egyptian Museum", "Saqqara Step Pyramid", "Khan el-Khalili Bazaar"],
+        "nearby_hotels": ["Marriott Mena House", "Four Seasons Hotel Cairo at The First Residence"],
+        "nearby_restaurants": ["139 Pavilion Mena House", "Felfela Cairo", "Naguib Mahfouz Café"],
+        "transport_options": "Private Tourist Guide & Driver or Cairo Metro Line 2 + Taxi (45 mins)",
+        "estimated_daily_budget_inr": 4500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Ancient Egypt", "Pharaohs", "Sphinx", "Wonder of the World"]
+    },
+    {
+        "id": "serengeti-tanzania",
+        "name": "Serengeti National Park & Great Migration",
+        "local_name": "Hifadhi ya Taifa ya Serengeti",
+        "city": "Serengeti",
+        "state": "Mara",
+        "country": "Tanzania",
+        "country_code": "TZ",
+        "continent": "Africa",
+        "latitude": -2.3333,
+        "longitude": 34.8333,
+        "category": "wildlife",
+        "rating": 4.9,
+        "reviews_count": 21800,
+        "images": [
+            "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Host to the greatest wildlife spectacle on Earth: the annual circular migration of 1.5 million wildebeest and hundreds of thousands of zebras and gazelles crossing crocodile-infested Mara river waters, stalked by Africa's dense lion populations.",
+        "opening_hours": "06:00 - 18:00 (Game Drives)",
+        "entry_fee_inr": 7200.0,
+        "best_season": "Jun - Oct (River Crossings) / Jan - Feb (Calving)",
+        "visit_duration": "3 - 5 Days",
+        "nearby_attractions": ["Ngorongoro Crater", "Mount Kilimanjaro", "Zanzibar Beaches"],
+        "nearby_hotels": ["Four Seasons Safari Lodge Serengeti", "Singita Faru Faru", "Sayari Camp"],
+        "nearby_restaurants": ["Bush Breakfast & Sundowner Safari Banquets"],
+        "transport_options": "Bush Flight from Arusha or Kilimanjaro Airport (1 hour) directly to Seronera Airstrip",
+        "estimated_daily_budget_inr": 28000.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Big Five Safari", "Great Migration", "Savannah", "Lions", "UNESCO"]
+    },
+    {
+        "id": "victoria-falls-zambia-zimbabwe",
+        "name": "Victoria Falls (Mosi-oa-Tunya)",
+        "local_name": "Mosi-oa-Tunya (Smoke That Thunders)",
+        "city": "Livingstone / Victoria Falls",
+        "state": "Southern Province",
+        "country": "Zambia / Zimbabwe",
+        "country_code": "ZM",
+        "continent": "Africa",
+        "latitude": -17.9243,
+        "longitude": 25.8572,
+        "category": "waterfall",
+        "rating": 4.9,
+        "reviews_count": 26400,
+        "images": [
+            "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The world's largest sheet of falling water, stretching 1,708 meters across the Zambezi River with a plunge of 108 meters into the Batoka Gorge. Features the world-famous Devil's Pool infinity rock basin on the lip of the abyss.",
+        "opening_hours": "06:00 - 18:00 Daily",
+        "entry_fee_inr": 2700.0,
+        "best_season": "Feb - May (High Flow) / Aug - Dec (Devil's Pool)",
+        "visit_duration": "2 - 3 Days",
+        "nearby_attractions": ["Devil's Pool", "Zambezi Sunset Cruise", "Batoka Gorge Rafting"],
+        "nearby_hotels": ["The Victoria Falls Hotel", "Royal Livingstone Hotel", "Elephant Camp"],
+        "nearby_restaurants": ["The Boma - Dinner & Drum Show", "Cassia Restaurant", "Livingstone Room"],
+        "transport_options": "Livingstone (LVI) or Victoria Falls (VFA) International Airports",
+        "estimated_daily_budget_inr": 8500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Giant Waterfall", "Devil's Pool", "Zambezi River", "Adventure"]
+    },
+
+    # ── OCEANIA ──
+    {
+        "id": "sydney-opera-house-australia",
+        "name": "Sydney Opera House & Harbour",
+        "local_name": "Sydney Opera House",
+        "city": "Sydney",
+        "state": "New South Wales",
+        "country": "Australia",
+        "country_code": "AU",
+        "continent": "Oceania",
+        "latitude": -33.8568,
+        "longitude": 151.2153,
+        "category": "wonder",
+        "rating": 4.8,
+        "reviews_count": 63900,
+        "images": [
+            "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Jørn Utzon's groundbreaking design of interlocking vaulted concrete shells resembling wind-filled billowing sails on Bennelong Point. A defining beacon of modern 20th-century architecture overlooking the Sydney Harbour Bridge.",
+        "opening_hours": "09:00 - 17:00 (Guided Tours)",
+        "entry_fee_inr": 2600.0,
+        "best_season": "Sep - Nov & Mar - May",
+        "visit_duration": "2 - 3 hours",
+        "nearby_attractions": ["Sydney Harbour Bridge", "The Rocks Historic Precinct", "Bondi to Coogee Coastal Walk"],
+        "nearby_hotels": ["Park Hyatt Sydney", "Crown Towers Sydney", "Shangri-La Sydney"],
+        "nearby_restaurants": ["Bennelong Restaurant", "Opera Bar", "Quay Restaurant"],
+        "transport_options": "Circular Quay Ferry, Train, and Light Rail Terminal (5 mins walk)",
+        "estimated_daily_budget_inr": 10500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["Modern Architecture", "Harbour Views", "UNESCO", "Sailing"]
+    },
+    {
+        "id": "great-barrier-reef-australia",
+        "name": "The Great Barrier Reef",
+        "local_name": "Great Barrier Reef",
+        "city": "Cairns / Whitsundays",
+        "state": "Queensland",
+        "country": "Australia",
+        "country_code": "AU",
+        "continent": "Oceania",
+        "latitude": -18.2871,
+        "longitude": 147.6992,
+        "category": "beach",
+        "rating": 4.9,
+        "reviews_count": 31500,
+        "images": [
+            "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "The largest living structure on Earth and so vast it is visible from space. Stretching 2,300 km along the Queensland coast, it harbors 1,500 fish species, 400 types of coral, sea turtles, rays, and pristine coral cays.",
+        "opening_hours": "Day Reef Catamarans depart 08:00 - 17:00",
+        "entry_fee_inr": 12500.0,
+        "best_season": "Jun - Oct",
+        "visit_duration": "1 - 3 Days",
+        "nearby_attractions": ["Whitehaven Beach", "Heart Reef", "Daintree Rainforest"],
+        "nearby_hotels": ["Qualia Resort Hamilton Island", "Lizard Island Resort", "Crystalbrook Flynn"],
+        "nearby_restaurants": ["Salt House Cairns", "Pebble Beach Hamilton Island"],
+        "transport_options": "High-Speed Catamaran / Seaplane from Cairns or Hamilton Island Marina",
+        "estimated_daily_budget_inr": 14500.0,
+        "family_friendly": True,
+        "unesco_heritage": True,
+        "tags": ["UNESCO", "Scuba Diving", "Coral Reef", "Marine Life", "Helicopter Tours"]
+    },
+
+    # ── INDIA & REGIONAL HIGHLIGHTS ──
+    {
+        "id": "varanasi-ghats-india",
+        "name": "Varanasi Ghats & Ganga Aarti",
+        "local_name": "काशी विश्वनाथ एवं दशाश्वमेध घाट",
+        "city": "Varanasi",
+        "state": "Uttar Pradesh",
+        "country": "India",
+        "country_code": "IN",
+        "continent": "Asia",
+        "latitude": 25.3076,
+        "longitude": 83.0107,
+        "category": "religious",
+        "rating": 4.9,
+        "reviews_count": 46200,
+        "images": [
+            "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1571536802807-30451e3955d8?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "One of the oldest continuously inhabited cities on Earth. The 84 sacred stone riverfront ghats host dawn boat rituals, centuries of spiritual traditions, and the daily sunset Maha Aarti ceremony at Dashashwamedh Ghat.",
+        "opening_hours": "Maha Aarti Daily at Sunset (18:30 - 19:30)",
+        "entry_fee_inr": 0.0,
+        "best_season": "Oct - Mar",
+        "visit_duration": "2 - 3 Days",
+        "nearby_attractions": ["Kashi Vishwanath Temple Corridor", "Sarnath Buddhist Stupa", "Assi Ghat"],
+        "nearby_hotels": ["BrijRama Palace", "Taj Ganges Varanasi", "Amritara Suryauday Haveli"],
+        "nearby_restaurants": ["Keshari Restaurant", "Blue Lassi Shop", "Dolphin Restaurant River View"],
+        "transport_options": "Vande Bharat Express from New Delhi / Varanasi Junction (BSB)",
+        "estimated_daily_budget_inr": 2800.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Spiritual", "Ganges River", "Ancient City", "Maha Aarti", "Hinduism"]
+    },
+    {
+        "id": "kashmir-gulmarg-dal-lake",
+        "name": "Kashmir (Srinagar & Gulmarg)",
+        "local_name": "डल झील व गुलमर्ग",
+        "city": "Srinagar & Gulmarg",
+        "state": "Jammu & Kashmir",
+        "country": "India",
+        "country_code": "IN",
+        "continent": "Asia",
+        "latitude": 34.0837,
+        "longitude": 74.7973,
+        "category": "mountain",
+        "rating": 4.9,
+        "reviews_count": 39100,
+        "images": [
+            "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Hailed as 'Paradise on Earth', Kashmir boasts iconic wooden houseboats on Dal Lake with floating shikara flower markets, coupled with the snow powder slopes of Gulmarg serviced by the world's highest operational gondola at 3,980 meters.",
+        "opening_hours": "Gulmarg Gondola: 09:00 - 16:30 Daily",
+        "entry_fee_inr": 1850.0,
+        "best_season": "Apr - Oct (Greenery) / Dec - Mar (Snow & Skiing)",
+        "visit_duration": "5 - 7 Days",
+        "nearby_attractions": ["Dal Lake Shikara", "Mughal Gardens", "Pahalgam Valley of Shepherds"],
+        "nearby_hotels": ["The Khyber Himalayan Resort & Spa", "Vivanta Dal View", "Heritage Luxury Houseboats"],
+        "nearby_restaurants": ["Ahdoos Srinagar (Wazwan)", "Mughal Darbar", "Highland Park Gulmarg"],
+        "transport_options": "Direct flights to Srinagar International Airport (SXR)",
+        "estimated_daily_budget_inr": 5500.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Paradise on Earth", "Snow", "Skiing", "Houseboats", "Himalayas"]
+    },
+    {
+        "id": "deoghar-baidyanath-dham",
+        "name": "Baba Baidyanath Dham & Trikut Pahar",
+        "local_name": "बाबा बैद्यनाथ धाम",
+        "city": "Deoghar",
+        "state": "Jharkhand",
+        "country": "India",
+        "country_code": "IN",
+        "continent": "Asia",
+        "latitude": 24.4925,
+        "longitude": 86.7000,
+        "category": "religious",
+        "rating": 4.8,
+        "reviews_count": 34000,
+        "images": [
+            "https://images.unsplash.com/photo-1544077960-604201fe74bc?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "One of the twelve sacred Jyotirlingas of Lord Shiva in India, famous for the annual Shravani Mela pilgrimage where millions walk 105 km from Sultanganj. Nearby Trikut Pahar features a scenic mountain ropeway and Tapovan caves.",
+        "opening_hours": "04:00 - 21:00 Daily",
+        "entry_fee_inr": 0.0,
+        "best_season": "Oct - Mar",
+        "visit_duration": "1 - 2 Days",
+        "nearby_attractions": ["Trikut Pahar Ropeway", "Naulakha Mandir", "Tapovan Caves"],
+        "nearby_hotels": ["Hotel Imperial Deoghar", "Hotel Yashoda International"],
+        "nearby_restaurants": ["Baidyanath Sweets (Peda)", "Mayur Restaurant"],
+        "transport_options": "Direct flights via Deoghar Airport (DGH) or 115 km from Dhanbad via NH 114A",
+        "estimated_daily_budget_inr": 1600.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Jyotirlinga", "Sacred Shiva", "Jharkhand Pilgrimage", "Ropeway"]
+    },
+    {
+        "id": "netarhat-queen-of-chotanagpur",
+        "name": "Netarhat (Queen of Chotanagpur)",
+        "local_name": "नेतरहाट की रानी",
+        "city": "Netarhat",
+        "state": "Jharkhand",
+        "country": "India",
+        "country_code": "IN",
+        "continent": "Asia",
+        "latitude": 23.4795,
+        "longitude": 84.2694,
+        "category": "mountain",
+        "rating": 4.7,
+        "reviews_count": 9800,
+        "images": [
+            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+        ],
+        "description": "Known affectionately as the 'Queen of Chotanagpur', Netarhat is perched at an altitude of 1,128 meters amid dense pine forests. Celebrated for its legendary sunrise point, Magnolia sunset cliff overlooking Koel river basin, and Lower Ghaghri falls.",
+        "opening_hours": "Open 24/7 (Sunset Point best 17:00 - 18:30)",
+        "entry_fee_inr": 0.0,
+        "best_season": "Oct - Apr",
+        "visit_duration": "2 - 3 Days",
+        "nearby_attractions": ["Magnolia Sunset Point", "Lower Ghaghri Waterfall", "Koil View Point"],
+        "nearby_hotels": ["Prabhat Vihar Tourist Bungalow", "Pine Grove Nature Resort"],
+        "nearby_restaurants": ["Forest View Dhaba", "Local Tribal Cuisine Cafes"],
+        "transport_options": "Highway Road Trip from Ranchi (150 km) or Dhanbad (290 km)",
+        "estimated_daily_budget_inr": 2200.0,
+        "family_friendly": True,
+        "unesco_heritage": False,
+        "tags": ["Hill Station", "Pine Forests", "Sunsets", "Jharkhand Eco-Tourism"]
+    }
+]
+
+def search_global_destinations(
+    query: Optional[str] = None,
+    continent: Optional[str] = None,
+    category: Optional[str] = None,
+    country: Optional[str] = None,
+    max_budget_inr: Optional[float] = None,
+    family_friendly_only: bool = False,
+    unesco_only: bool = False,
+    sort_by: str = "popularity"
+) -> List[Dict[str, Any]]:
+    """
+    Filters and ranks worldwide tourism destinations.
+    """
+    results = list(GLOBAL_DESTINATIONS)
+
+    if query:
+        q = query.lower().strip()
+        results = [
+            d for d in results
+            if q in d["name"].lower()
+            or q in d["city"].lower()
+            or q in d["country"].lower()
+            or q in d["category"].lower()
+            or q in d.get("local_name", "").lower()
+            or any(q in t.lower() for t in d.get("tags", []))
+        ]
+
+    if continent and continent.lower() != "all":
+        results = [d for d in results if d["continent"].lower() == continent.lower()]
+
+    if category and category.lower() != "all":
+        results = [d for d in results if d["category"].lower() == category.lower()]
+
+    if country and country.lower() != "all":
+        results = [d for d in results if d["country"].lower() == country.lower()]
+
+    if max_budget_inr:
+        results = [d for d in results if d["estimated_daily_budget_inr"] <= max_budget_inr]
+
+    if family_friendly_only:
+        results = [d for d in results if d.get("family_friendly", False)]
+
+    if unesco_only:
+        results = [d for d in results if d.get("unesco_heritage", False)]
+
+    # Sorting
+    if sort_by == "rating":
+        results.sort(key=lambda x: -x["rating"])
+    elif sort_by == "budget_low":
+        results.sort(key=lambda x: x["estimated_daily_budget_inr"])
+    elif sort_by == "popularity":
+        results.sort(key=lambda x: -x["reviews_count"])
+
+    return results
+
+def get_destination_by_id(dest_id: str) -> Optional[Dict[str, Any]]:
+    for d in GLOBAL_DESTINATIONS:
+        if d["id"] == dest_id:
+            return d
+    return None

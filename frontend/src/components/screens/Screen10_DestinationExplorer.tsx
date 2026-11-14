@@ -1,785 +1,737 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTravel } from '../../context/TravelContext';
-import { EXPLORER_DESTINATIONS, INDIAN_STATES_DATA, formatCurrency } from '../../data/travelData';
-import { DestinationItem } from '../../types';
+import { api } from '../../services/api';
+import { GlobalTourismItem, MultiStopRoutePlan } from '../../types';
+import { GlobalWorldMap } from '../tourism/GlobalWorldMap';
 import { 
-  MapPin, 
+  Compass, 
   Search, 
+  MapPin, 
   Star, 
   Heart, 
-  Calendar, 
-  Utensils, 
-  Coins, 
-  ArrowRight, 
+  Navigation, 
   Sparkles, 
-  Compass, 
-  ShieldCheck,
-  Navigation,
-  Filter,
-  Check,
-  Columns,
-  X,
-  Clock,
-  Layers,
-  Plane,
-  Car,
-  ChevronDown,
-  Info
+  Calendar, 
+  Clock, 
+  DollarSign, 
+  ShieldCheck, 
+  ExternalLink, 
+  Layers, 
+  Filter, 
+  ChevronRight, 
+  X, 
+  Globe, 
+  Utensils, 
+  Hotel, 
+  Car, 
+  Train, 
+  Plane, 
+  Share2, 
+  Printer, 
+  Plus, 
+  Trash2, 
+  ArrowRight, 
+  Check, 
+  SlidersHorizontal,
+  Bookmark,
+  CheckCircle2,
+  TrendingUp,
+  RefreshCw
 } from 'lucide-react';
 
 export const Screen10_DestinationExplorer: React.FC = () => {
   const { 
     currency, 
+    formatPrice, 
     setCurrentScreen, 
-    sendUserPrompt, 
-    savedDestinations, 
-    toggleSaveDestination,
-    openMarketplace 
+    sendUserPrompt,
+    savedDestinations,
+    toggleSaveDestination
   } = useTravel();
 
-  // Filters state
+  // Navigation tab inside explorer
+  type ExplorerNavTab = 'explore' | 'continents' | 'wonders' | 'nearby' | 'ai' | 'saved' | 'itinerary';
+  const [activeNavTab, setActiveNavTab] = useState<ExplorerNavTab>('explore');
+
+  // Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All');
-  const [selectedExperience, setSelectedExperience] = useState<string>('All');
-  const [selectedState, setSelectedState] = useState<string>('All');
-  const [maxDistance, setMaxDistance] = useState<string>('All');
+  const [selectedContinent, setSelectedContinent] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [budgetTier, setBudgetTier] = useState<string>('All');
-  const [onlyWeekend, setOnlyWeekend] = useState<boolean>(false);
+  const [familyFriendlyOnly, setFamilyFriendlyOnly] = useState(false);
+  const [unescoOnly, setUnescoOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<'popularity' | 'rating' | 'budget_low'>('popularity');
 
-  // Detail / Comparison Modal state
-  const [selectedDest, setSelectedDest] = useState<DestinationItem>(EXPLORER_DESTINATIONS[0]);
-  const [compareDest, setCompareDest] = useState<DestinationItem | null>(null);
-  const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false);
+  // Geolocation & Nearby
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [nearbyRadiusKm, setNearbyRadiusKm] = useState<number>(500);
+  const [locatingUser, setLocatingUser] = useState(false);
 
-  // Region options
-  const regions = [
-    { id: 'All', label: 'All Destinations 🌍' },
-    { id: 'India', label: 'India 🇮🇳 (Domestic)' },
-    { id: 'Asia', label: 'Asia 🌏' },
-    { id: 'Europe', label: 'Europe 🏰' },
-    { id: 'Americas', label: 'Americas 🗽' },
-  ];
+  // Data states
+  const [allDestinations, setAllDestinations] = useState<GlobalTourismItem[]>([]);
+  const [selectedDest, setSelectedDest] = useState<GlobalTourismItem | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Travel experiences
-  const experiences = [
-    'All',
-    'Adventure',
-    'Beach',
-    'Culture',
-    'Nature',
-    'Religious',
-    'City',
-    'Hill Station',
-    'Luxury'
-  ];
+  // Multi-Stop Smart Trip Planner State
+  const [tripPlanDestinations, setTripPlanDestinations] = useState<GlobalTourismItem[]>([]);
+  const [routePlanData, setRoutePlanData] = useState<MultiStopRoutePlan | null>(null);
+  const [planningRoute, setPlanningRoute] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
 
-  // Multilingual mapping dictionary for Hindi search queries
-  const hindiNameMap: Record<string, string> = {
-    'धनबाद': 'dhanbad',
-    'रांची': 'ranchi',
-    'देवघर': 'deoghar',
-    'नेतरहाट': 'netarhat',
-    'बेतला': 'betla',
-    'कोलकाता': 'kolkata',
-    'दार्जिलिंग': 'darjeeling',
-    'दीघा': 'digha',
-    'बोधगया': 'bodhgaya',
-    'राजगीर': 'rajgir',
-    'वाराणसी': 'varanasi',
-    'काशी': 'varanasi',
-    'अयोध्या': 'ayodhya',
-    'आगरा': 'agra',
-    'दिल्ली': 'delhi',
-    'जयपुर': 'jaipur',
-    'उदयपुर': 'udaipur',
-    'गोवा': 'goa',
-    'केरल': 'munnar',
-    'मुन्नार': 'munnar',
-    'मनाली': 'manali',
-    'ऋषिकेश': 'rishikesh',
-    'कश्मीर': 'kashmir',
-    'श्रीनगर': 'kashmir',
-    'लद्दाख': 'leh',
-    'लेह': 'leh',
-    'गंगटोक': 'gangtok',
-    'सिक्किम': 'gangtok',
-    'शिलांग': 'shillong',
-    'अंडमान': 'andaman',
-    'दुबई': 'dubai',
-    'बाली': 'bali',
-    'सिंगापुर': 'singapore',
-    'बैंकॉक': 'bangkok',
-    'टोक्यो': 'tokyo',
-    'पेरिस': 'paris',
-    'स्विट्जरलैंड': 'swiss',
-    'पुरी': 'puri',
-    'हम्पी': 'hampi',
-    'अमृतसर': 'amritsar',
-    'जैसलमेर': 'jaisalmer',
-    'ऊटी': 'ooty',
-    'कोड़ाईकनाल': 'kodaikanal',
-    'शिमला': 'shimla',
-    'मसूरी': 'mussoorie',
-    'पटना': 'patna',
-    'भुवनेश्वर': 'bhubaneswar',
-    'सैंटोरिनी': 'santorini',
-    'एम्स्टर्डम': 'amsterdam',
-    'बार्सिलोना': 'barcelona',
-    'कुआलालंपुर': 'kualalumpur',
-    'हनोई': 'hanoi',
-  };
+  // AI Recommendation State
+  const [aiVibe, setAiVibe] = useState<'romantic' | 'adventure' | 'family' | 'culture' | 'luxury'>('romantic');
+  const [aiSeason, setAiSeason] = useState<'winter' | 'summer' | 'monsoon' | 'autumn'>('winter');
+  const [aiRecommendations, setAiRecommendations] = useState<GlobalTourismItem[]>([]);
+  const [aiRationale, setAiRationale] = useState<string>('');
 
-  // Filter logic
-  const filtered = useMemo(() => {
-    return EXPLORER_DESTINATIONS.filter(d => {
-      // 1. Search Query (supports English and Hindi queries)
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const hindiTarget = hindiNameMap[q] || '';
-        const matchTitle = d.name.toLowerCase().includes(q) || d.city.toLowerCase().includes(q) || d.state.toLowerCase().includes(q) || d.country.toLowerCase().includes(q);
-        const matchHighlights = d.highlights.some(h => h.toLowerCase().includes(q));
-        const matchHindi = hindiTarget ? (d.id.includes(hindiTarget) || d.city.toLowerCase().includes(hindiTarget)) : false;
-
-        if (!matchTitle && !matchHighlights && !matchHindi) return false;
+  // Fetch initial destinations from backend
+  const loadDestinations = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getTourismDestinations({
+        query: searchQuery,
+        continent: selectedContinent,
+        category: selectedCategory,
+        max_budget: budgetTier === 'budget' ? 3500 : budgetTier === 'moderate' ? 8000 : undefined,
+        family_friendly: familyFriendlyOnly,
+        unesco_only: unescoOnly,
+        sort_by: sortBy
+      });
+      if (data && data.destinations && data.destinations.length > 0) {
+        setAllDestinations(data.destinations);
+        if (!selectedDest) {
+          setSelectedDest(data.destinations[0]);
+        }
       }
-
-      // 2. Region Filter
-      if (selectedRegion !== 'All' && d.region !== selectedRegion) {
-        return false;
-      }
-
-      // 3. Experience / Type Filter
-      if (selectedExperience !== 'All' && d.type !== selectedExperience) {
-        return false;
-      }
-
-      // 4. Indian State Filter (only applies if state selected)
-      if (selectedState !== 'All' && d.state !== selectedState) {
-        return false;
-      }
-
-      // 5. Distance Filter from Dhanbad
-      if (maxDistance !== 'All') {
-        const distLimit = Number(maxDistance);
-        if (d.distanceDhanbadKm > distLimit) return false;
-      }
-
-      // 6. Weekend Filter (< 350 km)
-      if (onlyWeekend && (d.distanceDhanbadKm > 350 || d.distanceDhanbadKm === 0)) {
-        return false;
-      }
-
-      // 7. Budget Filter
-      if (budgetTier !== 'All') {
-        if (budgetTier === 'budget' && d.dailyBudgetINR > 2500) return false;
-        if (budgetTier === 'standard' && (d.dailyBudgetINR <= 2500 || d.dailyBudgetINR > 5000)) return false;
-        if (budgetTier === 'premium' && (d.dailyBudgetINR <= 5000 || d.dailyBudgetINR > 10000)) return false;
-        if (budgetTier === 'luxury' && d.dailyBudgetINR <= 10000) return false;
-      }
-
-      return true;
-    });
-  }, [searchQuery, selectedRegion, selectedExperience, selectedState, maxDistance, budgetTier, onlyWeekend]);
-
-  const handlePlanForDest = (destName: string) => {
-    if (destName === 'Dubai') {
-      setCurrentScreen('11-itinerary');
-    } else {
-      setCurrentScreen('06-copilot');
-      sendUserPrompt(`I want to plan a comprehensive vacation to ${destName}. Please generate the day-by-day itinerary, travel route, flight/train booking options and budget breakdown.`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCompareClick = (dest: DestinationItem) => {
-    if (!compareDest) {
-      setCompareDest(dest);
-    } else {
-      setSelectedDest(dest);
-      setShowComparisonModal(true);
+  useEffect(() => {
+    loadDestinations();
+  }, [selectedContinent, selectedCategory, budgetTier, familyFriendlyOnly, unescoOnly, sortBy]);
+
+  // Search debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadDestinations();
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Request user geolocation
+  const handleRequestLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocatingUser(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setUserLocation(coords);
+        setLocatingUser(false);
+        setActiveNavTab('nearby');
+        fetchNearby(coords.latitude, coords.longitude, nearbyRadiusKm);
+      },
+      (err) => {
+        console.warn("Geolocation denied or unavailable:", err.message);
+        // Fallback to Dhanbad / Delhi coordinates for seamless experience
+        const fallback = { latitude: 23.7957, longitude: 86.4304 };
+        setUserLocation(fallback);
+        setLocatingUser(false);
+        setActiveNavTab('nearby');
+        fetchNearby(fallback.latitude, fallback.longitude, nearbyRadiusKm);
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  const fetchNearby = async (lat: number, lon: number, radius: number) => {
+    try {
+      const res = await api.getNearbyPlaces(lat, lon, radius);
+      if (res && res.results) {
+        setAllDestinations(res.results);
+        if (res.results.length > 0) {
+          setSelectedDest(res.results[0]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
+
+  // Trigger AI Recommendation
+  const handleFetchAIRecommendations = async (vibe = aiVibe, season = aiSeason) => {
+    setLoading(true);
+    try {
+      const res = await api.getAIRecommendations({
+        vibe,
+        season,
+        continent: selectedContinent,
+        category: selectedCategory
+      });
+      if (res && res.recommendations) {
+        setAiRecommendations(res.recommendations);
+        setAiRationale(res.ai_rationale || '');
+        setAllDestinations(res.recommendations);
+        if (res.recommendations.length > 0) {
+          setSelectedDest(res.recommendations[0]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add / Remove from Multi-Stop Trip Planner
+  const handleAddToTripPlan = (dest: GlobalTourismItem) => {
+    if (!tripPlanDestinations.some(d => d.id === dest.id)) {
+      const updated = [...tripPlanDestinations, dest];
+      setTripPlanDestinations(updated);
+      calculateRoute(updated);
+    }
+  };
+
+  const handleRemoveFromTripPlan = (destId: string) => {
+    const updated = tripPlanDestinations.filter(d => d.id !== destId);
+    setTripPlanDestinations(updated);
+    if (updated.length >= 2) {
+      calculateRoute(updated);
+    } else {
+      setRoutePlanData(null);
+    }
+  };
+
+  const calculateRoute = async (destList: GlobalTourismItem[]) => {
+    if (destList.length < 2) return;
+    setPlanningRoute(true);
+    try {
+      const ids = destList.map(d => d.id);
+      const plan = await api.planMultiStopRoute(ids);
+      setRoutePlanData(plan);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPlanningRoute(false);
+    }
+  };
+
+  // Filter categories
+  const categories = [
+    { id: 'All', label: 'All Places', icon: '🌍' },
+    { id: 'wonder', label: 'World Wonders', icon: '🌟' },
+    { id: 'monument', label: 'Monuments', icon: '🏛️' },
+    { id: 'beach', label: 'Beaches & Islands', icon: '🏖️' },
+    { id: 'mountain', label: 'Mountains & Trekking', icon: '🏔️' },
+    { id: 'wildlife', label: 'Wildlife & Safaris', icon: '🦁' },
+    { id: 'waterfall', label: 'Waterfalls & Lakes', icon: '🌊' },
+    { id: 'religious', label: 'Sacred & Spiritual', icon: '🛕' },
+  ];
+
+  const continents = ['All', 'Asia', 'Europe', 'North America', 'South America', 'Africa', 'Oceania'];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 select-none animate-page-enter">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-fade-in select-none">
       
-      {/* ── Top Header matching mockup ── */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-500/20 shadow-sm">
-          <Compass className="w-4 h-4 text-rose-500" />
-          <span>Screen 10 • Destination Explorer & Worldwide Discovery</span>
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-black text-midnight-navy dark:text-white tracking-tight">
-          Explore the World 🌍
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Discover destinations, local travel around Dhanbad & Jharkhand, domestic tourism across 32 Indian states, and worldwide international getaways.
-        </p>
-
-        {/* ── Multilingual & Global Search Bar ── */}
-        <div className="max-w-xl mx-auto pt-2">
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl theme-card border border-slate-200 dark:border-slate-800 shadow-sm focus-within:ring-2 focus-within:ring-ai-purple/50">
-            <Search className="w-5 h-5 text-slate-400 shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search city, state, country or Hindi (e.g. Kashmir, Netarhat, मनाली, Dubai)..."
-              className="bg-transparent text-xs sm:text-sm w-full text-midnight-navy dark:text-white focus:outline-none placeholder:text-slate-400"
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Filter Ribbons: Region & Experiences ── */}
-      <div className="space-y-4 theme-card p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm">
-        
-        {/* Row 1: Region Selection */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-            Choose Region:
-          </span>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {regions.map(r => (
-              <button
-                key={r.id}
-                onClick={() => {
-                  setSelectedRegion(r.id);
-                  if (r.id !== 'India') setSelectedState('All');
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 ${
-                  selectedRegion === r.id
-                    ? 'bg-midnight-navy dark:bg-white text-white dark:text-midnight-navy shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 2: Travel Experience */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-            Travel Experience:
-          </span>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {experiences.map(exp => (
-              <button
-                key={exp}
-                onClick={() => setSelectedExperience(exp)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition shrink-0 ${
-                  selectedExperience === exp
-                    ? 'bg-ai-purple text-white shadow-sm'
-                    : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-ai-purple'
-                }`}
-              >
-                {exp === 'All' ? 'All Experiences' : exp}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 3: Advanced Dropdowns (State, Near Me Distance, Budget, Weekend Toggle) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
-          
-          {/* Indian State Selector (Dynamic) */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Indian State / UT</label>
-            <select
-              value={selectedState}
-              onChange={e => {
-                setSelectedState(e.target.value);
-                if (e.target.value !== 'All') setSelectedRegion('India');
-              }}
-              className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-midnight-navy dark:text-white focus:outline-none"
-            >
-              <option value="All">All Indian States (32+)</option>
-              {Object.keys(INDIAN_STATES_DATA).map(st => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
+      {/* ── TOP HERO BANNER ── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-6 md:p-8 shadow-2xl border border-white/10">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
+              <Compass className="w-3.5 h-3.5 text-blue-400 animate-spin-slow" />
+              Global Tourism Explorer & 3D Discovery
+            </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
+              Explore Every Corner of the World 🌍
+            </h1>
+            <p className="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+              Interactive 3D globe & world map showcasing iconic UNESCO World Heritage sites, beaches, mountain summits, wildlife reserves, and sacred monuments with live route planning and GPS proximity explorer.
+            </p>
           </div>
 
-          {/* Near Me & Distance from Dhanbad */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Distance (From Dhanbad)</label>
-            <select
-              value={maxDistance}
-              onChange={e => setMaxDistance(e.target.value)}
-              className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-midnight-navy dark:text-white focus:outline-none"
-            >
-              <option value="All">Any Distance / Global</option>
-              <option value="150">📍 Near Me (Within 150 km - Local)</option>
-              <option value="350">🚗 Weekend Drive (Within 350 km)</option>
-              <option value="600">🚆 Regional (Within 600 km)</option>
-              <option value="1500">✈️ National (Within 1500 km)</option>
-            </select>
-          </div>
-
-          {/* Daily Budget Tier */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Daily Budget Tier</label>
-            <select
-              value={budgetTier}
-              onChange={e => setBudgetTier(e.target.value)}
-              className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-midnight-navy dark:text-white focus:outline-none"
-            >
-              <option value="All">All Budgets</option>
-              <option value="budget">Pocket-Friendly (&lt; ₹2,500/day)</option>
-              <option value="standard">Standard (₹2,500 - ₹5,000/day)</option>
-              <option value="premium">Premium (₹5,000 - ₹10,000/day)</option>
-              <option value="luxury">Luxury (&gt; ₹10,000/day)</option>
-            </select>
-          </div>
-
-          {/* Weekend Trips Quick Toggle & Reset */}
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setOnlyWeekend(!onlyWeekend)}
-              className={`flex-1 p-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-1.5 ${
-                onlyWeekend
-                  ? 'bg-amber-400 text-midnight-navy border-amber-500 shadow-sm'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-transparent hover:border-slate-300'
-              }`}
+              onClick={handleRequestLocation}
+              disabled={locatingUser}
+              className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all"
             >
-              <span>⚡ Weekend Trips (2-3 Days)</span>
+              <Navigation className={`w-3.5 h-3.5 ${locatingUser ? 'animate-spin' : ''}`} />
+              <span>{locatingUser ? 'Locating...' : 'Explore Near Me'}</span>
             </button>
-
             <button
               onClick={() => {
-                setSearchQuery('');
-                setSelectedRegion('All');
-                setSelectedExperience('All');
-                setSelectedState('All');
-                setMaxDistance('All');
-                setBudgetTier('All');
-                setOnlyWeekend(false);
+                setActiveNavTab('itinerary');
               }}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 text-xs font-bold"
-              title="Reset Filters"
+              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white text-xs font-bold flex items-center gap-2 transition-all"
             >
-              Reset
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span>Trip Planner ({tripPlanDestinations.length})</span>
             </button>
           </div>
-
         </div>
+
+        {/* Subtle background glow */}
+        <div className="absolute -right-16 -top-16 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
-      {/* ── Active Results Count & Comparison Bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-extrabold text-midnight-navy dark:text-white text-sm">
-            Showing {filtered.length} Destinations
-          </span>
-          {selectedRegion !== 'All' && (
-            <span className="px-2 py-0.5 rounded-full bg-ai-purple/10 text-ai-purple font-bold text-[10px]">
-              {selectedRegion}
-            </span>
-          )}
-          {onlyWeekend && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 font-bold text-[10px]">
-              Weekend Escapes (&lt; 350 km)
-            </span>
-          )}
-        </div>
-
-        {/* Comparison Indicator */}
-        <div className="flex items-center gap-2">
-          {compareDest ? (
-            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/25 px-3 py-1.5 rounded-full">
-              <span className="text-ai-purple font-bold">Comparing with: {compareDest.name}</span>
-              <button
-                onClick={() => {
-                  setSelectedDest(selectedDest);
-                  setShowComparisonModal(true);
-                }}
-                className="px-2 py-0.5 rounded-md bg-ai-purple text-white font-extrabold text-[10px]"
-              >
-                View Comparison
-              </button>
-              <button onClick={() => setCompareDest(null)} className="text-slate-400 hover:text-rose-500">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <span className="text-slate-400 flex items-center gap-1">
-              <Columns className="w-3.5 h-3.5" />
-              <span>Click "Compare" on any card to compare side-by-side</span>
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ── Spotlight Hero on Selected Destination ── */}
-      <div className="theme-card rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 border border-slate-200/90 dark:border-slate-800 animate-slide-up">
-        <div className="lg:col-span-7 relative h-72 lg:h-96">
-          <img
-            src={selectedDest.image}
-            alt={selectedDest.name}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
-            }}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/90 via-midnight-navy/30 to-transparent" />
+      {/* ── MAIN WORKSPACE: 3-PANEL LAYOUT ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* ── LEFT SUB-SIDEBAR: NAVIGATION & FILTERS (3 Cols) ── */}
+        <div className="lg:col-span-3 space-y-4">
           
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-ai-purple text-white text-[10px] font-black uppercase tracking-wider shadow-md">
-              {selectedDest.tag}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-bold border border-white/30">
-              {selectedDest.type}
-            </span>
-          </div>
-
-          <div className="absolute bottom-5 left-5 right-5 text-white space-y-1">
-            <h2 className="text-2xl sm:text-4xl font-black">
-              {selectedDest.name}, {selectedDest.state ? `${selectedDest.state}, ` : ''}{selectedDest.country}
-            </h2>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-200 pt-1">
-              <span className="flex items-center gap-1">
-                <Navigation className="w-3.5 h-3.5 text-sky-400" />
-                <span>
-                  {selectedDest.distanceDhanbadKm === 0 
-                    ? 'Current City (Dhanbad Base)' 
-                    : `${selectedDest.distanceDhanbadKm.toLocaleString()} km from Dhanbad`}
-                </span>
-              </span>
-              <span>•</span>
-              <span>Visa: {selectedDest.visa}</span>
+          {/* Main Navigation Pill Menu */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-3 shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-1">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">
+              Explorer Modes
             </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-5 p-6 sm:p-7 space-y-5 flex flex-col justify-between bg-white dark:bg-slate-900">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Best Season</span>
-                <div className="text-xs font-bold text-midnight-navy dark:text-white flex items-center gap-1.5 mt-0.5">
-                  <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{selectedDest.bestSeason}</span>
+            {[
+              { id: 'explore', label: 'Global Explorer', icon: <Globe className="w-4 h-4 text-blue-500" /> },
+              { id: 'continents', label: 'Continents & Regions', icon: <Compass className="w-4 h-4 text-emerald-500" /> },
+              { id: 'wonders', label: 'World Wonders', icon: <Sparkles className="w-4 h-4 text-amber-500" /> },
+              { id: 'nearby', label: 'Nearby Explorer (GPS)', icon: <Navigation className="w-4 h-4 text-cyan-500" /> },
+              { id: 'ai', label: 'AI Recommendations', icon: <TrendingUp className="w-4 h-4 text-purple-500" /> },
+              { id: 'saved', label: 'Saved Favorites', icon: <Heart className="w-4 h-4 text-rose-500" />, badge: savedDestinations.length },
+              { id: 'itinerary', label: 'Smart Trip Planner', icon: <Calendar className="w-4 h-4 text-amber-500" />, badge: tripPlanDestinations.length },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveNavTab(tab.id as ExplorerNavTab);
+                  if (tab.id === 'wonders') {
+                    setSelectedCategory('wonder');
+                  } else if (tab.id === 'explore') {
+                    setSelectedCategory('All');
+                    setSelectedContinent('All');
+                  }
+                }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between ${
+                  activeNavTab === tab.id
+                    ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {tab.icon}
+                  <span>{tab.label}</span>
                 </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Est. Daily Budget</span>
-                <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(selectedDest.dailyBudgetINR, currency)}
-                  <span className="text-[10px] text-slate-400 font-normal"> / day</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider flex items-center gap-1">
-                <Utensils className="w-3.5 h-3.5 text-rose-500" />
-                <span>Local Food & Cultural Specialties</span>
-              </span>
-              <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                {selectedDest.cuisine}
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider block">
-                Top Sights & Experiences
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedDest.highlights.map(h => (
-                  <span key={h} className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    {h}
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-600 text-white">
+                    {tab.badge}
                   </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Continents Filter Drawer */}
+          {activeNavTab === 'continents' && (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                Filter Continent
+              </span>
+              <div className="space-y-1">
+                {continents.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setSelectedContinent(c)}
+                    className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${
+                      selectedContinent === c
+                        ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>{c}</span>
+                    {selectedContinent === c && <Check className="w-3.5 h-3.5" />}
+                  </button>
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Nearby Radius Controls */}
+          {activeNavTab === 'nearby' && (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Proximity Radius</span>
+                <span className="text-xs font-black text-blue-600 dark:text-blue-400">{nearbyRadiusKm} km</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="3000"
+                step="50"
+                value={nearbyRadiusKm}
+                onChange={(e) => {
+                  const r = Number(e.target.value);
+                  setNearbyRadiusKm(r);
+                  if (userLocation) {
+                    fetchNearby(userLocation.latitude, userLocation.longitude, r);
+                  }
+                }}
+                className="w-full accent-blue-600 cursor-pointer"
+              />
+              <p className="text-[11px] text-slate-400 leading-tight">
+                Showing tourist places within {nearbyRadiusKm} km of your GPS location.
+              </p>
+            </div>
+          )}
+
+          {/* AI Vibe Selector */}
+          {activeNavTab === 'ai' && (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                Travel Style & Vibe
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {(['romantic', 'adventure', 'family', 'culture', 'luxury'] as const).map(v => (
+                  <button
+                    key={v}
+                    onClick={() => {
+                      setAiVibe(v);
+                      handleFetchAIRecommendations(v, aiSeason);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl capitalize font-semibold transition ${
+                      aiVibe === v
+                        ? 'bg-purple-600 text-white shadow-md'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Filter Attributes */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-2.5 text-xs">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+              Filter Criteria
+            </span>
+            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={unescoOnly}
+                onChange={e => setUnescoOnly(e.target.checked)}
+                className="rounded text-blue-600 focus:ring-blue-500"
+              />
+              <span>UNESCO World Heritage Only</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={familyFriendlyOnly}
+                onChange={e => setFamilyFriendlyOnly(e.target.checked)}
+                className="rounded text-blue-600 focus:ring-blue-500"
+              />
+              <span>Family Friendly</span>
+            </label>
+          </div>
+        </div>
+
+        {/* ── CENTER AREA: MAP & FLOATING CONTROLS (6 Cols) ── */}
+        <div className="lg:col-span-6 space-y-4">
+          
+          {/* Floating Search Bar */}
+          <div className="relative">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+              <Search className="w-5 h-5 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search any destination, country, monument or city in the world..."
+                className="bg-transparent text-xs sm:text-sm w-full text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-2.5">
-            <button
-              onClick={() => toggleSaveDestination(selectedDest.id)}
-              className={`w-full sm:w-auto p-3 rounded-xl border transition flex items-center justify-center ${
-                savedDestinations.includes(selectedDest.id)
-                  ? 'border-rose-500 text-rose-500 bg-rose-50 dark:bg-rose-950/30'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600'
-              }`}
-              title="Save to favorites"
-            >
-              <Heart className={`w-4 h-4 ${savedDestinations.includes(selectedDest.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
-            </button>
-
-            <button
-              onClick={() => openMarketplace('packages')}
-              className="w-full sm:w-auto px-4 py-3 rounded-xl border border-purple-500/30 bg-purple-500/10 text-ai-purple font-bold text-xs hover:bg-purple-500/20 transition flex items-center justify-center gap-1.5"
-            >
-              <Car className="w-4 h-4 text-ai-purple" />
-              <span>Book Package / Cabs</span>
-            </button>
-
-            <button
-              onClick={() => handlePlanForDest(selectedDest.name)}
-              className="flex-1 btn-primary-gradient py-3 rounded-xl font-bold text-xs shadow-md shadow-purple-500/20 flex items-center justify-center gap-2 w-full"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Plan {selectedDest.name} with AI</span>
-            </button>
+          {/* Category Ribbon */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  selectedCategory === cat.id
+                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
           </div>
+
+          {/* Interactive World Map Canvas */}
+          <GlobalWorldMap
+            destinations={allDestinations}
+            selectedDestination={selectedDest}
+            onSelectDestination={(dest) => setSelectedDest(dest)}
+            routeWaypoints={tripPlanDestinations}
+            userLocation={userLocation}
+            className="h-[520px]"
+          />
+
+          {/* Multi-Stop Itinerary Route Summary (if 2+ waypoints) */}
+          {routePlanData && tripPlanDestinations.length >= 2 && (
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500/10 via-slate-900 to-indigo-950 border border-amber-500/30 text-white shadow-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                    Smart Multi-Stop Route Computed
+                  </span>
+                </div>
+                <button
+                  onClick={() => setPrintModalOpen(true)}
+                  className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg flex items-center gap-1 transition"
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print / PDF
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] text-slate-400 block">Total Distance</span>
+                  <span className="text-base font-extrabold text-white">{routePlanData.total_distance_km.toLocaleString()} km</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] text-slate-400 block">Transit Time</span>
+                  <span className="text-base font-extrabold text-white">{routePlanData.estimated_transit_hours} hrs</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] text-slate-400 block">Est. Transit Cost</span>
+                  <span className="text-base font-extrabold text-emerald-400">{formatPrice(routePlanData.estimated_transit_cost_inr)}</span>
+                </div>
+              </div>
+
+              {/* Legs list */}
+              <div className="space-y-1.5 pt-1 text-xs">
+                {routePlanData.legs.map((leg, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-slate-300 py-1 border-b border-white/5">
+                    <span className="font-semibold text-white truncate max-w-[55%]">
+                      {idx + 1}. {leg.from_name} ➔ {leg.to_name}
+                    </span>
+                    <span className="text-amber-300 font-mono text-[11px]">
+                      {leg.distance_km} km ({leg.recommended_mode})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── RIGHT DOCKED INSPECTOR: DESTINATION DOSSIER (3 Cols) ── */}
+        <div className="lg:col-span-3 space-y-4">
+          {selectedDest ? (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-4 animate-scale-in">
+              {/* Photo Showcase */}
+              <div className="relative rounded-2xl overflow-hidden aspect-[16/10] shadow-md group">
+                <img 
+                  src={selectedDest.images[0]} 
+                  alt={selectedDest.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <button
+                    onClick={() => toggleSaveDestination(selectedDest.id)}
+                    className="p-2 rounded-full bg-slate-900/80 backdrop-blur-md text-white hover:text-rose-400 shadow-md transition"
+                  >
+                    <Heart className={`w-4 h-4 ${savedDestinations.includes(selectedDest.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
+                  </button>
+                </div>
+                <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-[11px] font-bold text-white flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span>{selectedDest.rating}</span>
+                  <span className="text-slate-400 font-normal">({selectedDest.reviews_count.toLocaleString()})</span>
+                </div>
+              </div>
+
+              {/* Title & Location */}
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 block mb-0.5">
+                  {selectedDest.continent} • {selectedDest.category}
+                </span>
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  {selectedDest.name}
+                </h2>
+                {selectedDest.local_name && (
+                  <p className="text-xs text-slate-400 font-medium">{selectedDest.local_name}</p>
+                )}
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <span>{selectedDest.city}, {selectedDest.country}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-h-36 overflow-y-auto pr-1">
+                {selectedDest.description}
+              </p>
+
+              {/* Practical Facts Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Entry Ticket</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {selectedDest.entry_fee_inr === 0 ? 'Free Entry' : formatPrice(selectedDest.entry_fee_inr)}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Best Season</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedDest.best_season}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Visit Duration</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedDest.visit_duration}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Est. Daily Budget</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatPrice(selectedDest.estimated_daily_budget_inr)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Transit & Nearby Highlights */}
+              <div className="text-xs space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+                <div className="text-slate-500 dark:text-slate-400">
+                  <strong className="text-slate-900 dark:text-white">Transit:</strong> {selectedDest.transport_options}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {selectedDest.tags.map((tag, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-medium">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => handleAddToTripPlan(selectedDest)}
+                  disabled={tripPlanDestinations.some(d => d.id === selectedDest.id)}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>
+                    {tripPlanDestinations.some(d => d.id === selectedDest.id) ? 'Added to Itinerary' : 'Add to Multi-Stop Itinerary'}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setCurrentScreen('06-copilot');
+                    sendUserPrompt(`Plan a trip to ${selectedDest.name} in ${selectedDest.city}, ${selectedDest.country}. What are the best flights, stays and 3-day itinerary?`);
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                  <span>Plan with AI Copilot</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 text-center text-slate-400 text-xs border border-slate-200 dark:border-slate-800">
+              Select any marker on the world map to view detailed travel dossier.
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Destinations Grid ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
-        {filtered.map(dest => {
-          const isSelected = selectedDest.id === dest.id;
-          const isSaved = savedDestinations.includes(dest.id);
-          return (
-            <div
-              key={dest.id}
-              onClick={() => setSelectedDest(dest)}
-              className={`theme-card card-lift rounded-3xl overflow-hidden cursor-pointer group flex flex-col justify-between border transition-all duration-300 ${
-                isSelected ? 'ring-2 ring-ai-purple border-ai-purple shadow-xl' : 'border-slate-200/80 dark:border-slate-800'
-              }`}
-            >
+      {/* ── PRINT / PDF ITINERARY EXPORT MODAL ── */}
+      {printModalOpen && routePlanData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
-                <div className="relative h-48 overflow-hidden bg-slate-900">
-                  <img
-                    src={dest.image}
-                    alt={dest.name}
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
-                    }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-                  
-                  {/* Top rating */}
-                  <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{dest.rating}</span>
-                    <span className="text-slate-400 font-normal">({dest.reviews})</span>
-                  </div>
-
-                  {/* Distance from Dhanbad */}
-                  <div className="absolute top-3 right-3 bg-midnight-navy/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
-                    <Navigation className="w-3 h-3 text-sky-400" />
-                    <span>{dest.distanceDhanbadKm === 0 ? 'Dhanbad Base' : `${dest.distanceDhanbadKm} km`}</span>
-                  </div>
-
-                  {/* Title overlay */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <h4 className="font-black text-lg leading-snug drop-shadow-md">
-                      {dest.name}
-                    </h4>
-                    <p className="text-xs text-slate-200 drop-shadow-sm flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-rose-400" />
-                      <span>{dest.state ? `${dest.state}, ` : ''}{dest.country}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-4 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                      <span>{dest.bestSeason}</span>
-                    </span>
-
-                    <span className="font-black text-sm text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(dest.dailyBudgetINR, currency)}
-                      <span className="text-[10px] text-slate-400 font-normal"> / day</span>
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {dest.highlights.slice(0, 3).map(h => (
-                      <span
-                        key={h}
-                        className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium"
-                      >
-                        {h}
-                      </span>
-                    ))}
-                    {dest.highlights.length > 3 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-400">
-                        +{dest.highlights.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">TravelMate.AI Export</span>
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Worldwide Multi-Destination Itinerary</h2>
               </div>
-
-              {/* Card Footer Actions */}
-              <div className="p-4 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleCompareClick(dest);
-                  }}
-                  className="text-[11px] font-bold text-slate-500 hover:text-ai-purple flex items-center gap-1"
-                >
-                  <Columns className="w-3 h-3" />
-                  <span>Compare</span>
-                </button>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      toggleSaveDestination(dest.id);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
-                  >
-                    <Heart className={`w-4 h-4 ${isSaved ? 'fill-rose-500 text-rose-500' : ''}`} />
-                  </button>
-
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      handlePlanForDest(dest.name);
-                    }}
-                    className="btn-primary-gradient px-3 py-1.5 rounded-xl font-bold text-[11px] shadow-sm flex items-center gap-1"
-                  >
-                    <span>Plan AI</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Side-by-Side Destination Comparison Modal ── */}
-      {showComparisonModal && compareDest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
-            
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-              <div className="flex items-center gap-2">
-                <Columns className="w-5 h-5 text-ai-purple" />
-                <h3 className="font-black text-lg text-midnight-navy dark:text-white">
-                  Destination Comparison Matrix
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowComparisonModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
-              >
+              <button onClick={() => setPrintModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                
-                {/* Destination 1 */}
-                <div className="space-y-4 theme-card p-5 rounded-2xl border-2 border-ai-purple">
-                  <img
-                    src={selectedDest.image}
-                    alt={selectedDest.name}
-                    className="w-full h-40 object-cover rounded-xl"
-                  />
-                  <div>
-                    <span className="text-[10px] font-bold text-ai-purple uppercase">{selectedDest.type}</span>
-                    <h4 className="text-xl font-black text-midnight-navy dark:text-white">{selectedDest.name}</h4>
-                    <p className="text-xs text-slate-400">{selectedDest.country}</p>
-                  </div>
-
-                  <div className="space-y-2 text-xs divide-y divide-slate-100 dark:divide-slate-800">
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Daily Budget:</span>
-                      <strong className="text-emerald-500">{formatCurrency(selectedDest.dailyBudgetINR, currency)}</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Distance:</span>
-                      <strong>{selectedDest.distanceDhanbadKm} km</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Best Season:</span>
-                      <strong>{selectedDest.bestSeason}</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Visa Requirements:</span>
-                      <strong className="text-ai-purple">{selectedDest.visa}</strong>
-                    </div>
-                    <div className="pt-2">
-                      <span className="text-slate-400 block mb-1">Famous Food:</span>
-                      <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">{selectedDest.cuisine}</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setShowComparisonModal(false);
-                      handlePlanForDest(selectedDest.name);
-                    }}
-                    className="w-full btn-primary-gradient py-2.5 rounded-xl font-bold text-xs"
-                  >
-                    Plan {selectedDest.name}
-                  </button>
+            <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300">
+              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Total Stops</span>
+                  <strong className="text-base text-slate-900 dark:text-white">{routePlanData.total_waypoints} Destinations</strong>
                 </div>
-
-                {/* Destination 2 */}
-                <div className="space-y-4 theme-card p-5 rounded-2xl border-2 border-ocean-blue">
-                  <img
-                    src={compareDest.image}
-                    alt={compareDest.name}
-                    className="w-full h-40 object-cover rounded-xl"
-                  />
-                  <div>
-                    <span className="text-[10px] font-bold text-ocean-blue uppercase">{compareDest.type}</span>
-                    <h4 className="text-xl font-black text-midnight-navy dark:text-white">{compareDest.name}</h4>
-                    <p className="text-xs text-slate-400">{compareDest.country}</p>
-                  </div>
-
-                  <div className="space-y-2 text-xs divide-y divide-slate-100 dark:divide-slate-800">
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Daily Budget:</span>
-                      <strong className="text-emerald-500">{formatCurrency(compareDest.dailyBudgetINR, currency)}</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Distance:</span>
-                      <strong>{compareDest.distanceDhanbadKm} km</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Best Season:</span>
-                      <strong>{compareDest.bestSeason}</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between">
-                      <span className="text-slate-400">Visa Requirements:</span>
-                      <strong className="text-ocean-blue">{compareDest.visa}</strong>
-                    </div>
-                    <div className="pt-2">
-                      <span className="text-slate-400 block mb-1">Famous Food:</span>
-                      <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300">{compareDest.cuisine}</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setShowComparisonModal(false);
-                      handlePlanForDest(compareDest.name);
-                    }}
-                    className="w-full btn-primary-gradient py-2.5 rounded-xl font-bold text-xs"
-                  >
-                    Plan {compareDest.name}
-                  </button>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Distance</span>
+                  <strong className="text-base text-slate-900 dark:text-white">{routePlanData.total_distance_km.toLocaleString()} km</strong>
                 </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Est. Transit Cost</span>
+                  <strong className="text-base text-emerald-600 dark:text-emerald-400">{formatPrice(routePlanData.estimated_transit_cost_inr)}</strong>
+                </div>
+              </div>
 
+              {/* Waypoint Schedule */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">
+                  Waypoint Schedule & Route Legs:
+                </h4>
+                {tripPlanDestinations.map((d, i) => (
+                  <div key={d.id} className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-slate-900 dark:text-white">{d.name}</strong>
+                        <span className="text-slate-400">{d.city}, {d.country}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{d.description.slice(0, 140)}...</p>
+                      <div className="flex items-center gap-3 mt-2 text-[10px] font-medium text-slate-400">
+                        <span>Best: {d.best_season}</span>
+                        <span>•</span>
+                        <span>Ticket: {d.entry_fee_inr === 0 ? 'Free' : formatPrice(d.entry_fee_inr)}</span>
+                        <span>•</span>
+                        <span>Budget: {formatPrice(d.estimated_daily_budget_inr)}/day</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => setPrintModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print Itinerary / Save as PDF</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

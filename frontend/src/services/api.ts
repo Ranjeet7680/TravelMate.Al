@@ -175,5 +175,120 @@ export const api = {
     } catch (e) {
       // Non-blocking telemetry
     }
+  },
+
+  // ── Global Tourism Explorer APIs ──
+  async getTourismDestinations(params: {
+    query?: string;
+    continent?: string;
+    category?: string;
+    country?: string;
+    max_budget?: number;
+    family_friendly?: boolean;
+    unesco_only?: boolean;
+    sort_by?: string;
+    page?: number;
+    page_size?: number;
+  } = {}): Promise<any> {
+    try {
+      const q = new URLSearchParams();
+      if (params.query) q.append('query', params.query);
+      if (params.continent && params.continent !== 'All') q.append('continent', params.continent);
+      if (params.category && params.category !== 'All') q.append('category', params.category);
+      if (params.country && params.country !== 'All') q.append('country', params.country);
+      if (params.max_budget) q.append('max_budget', String(params.max_budget));
+      if (params.family_friendly) q.append('family_friendly', 'true');
+      if (params.unesco_only) q.append('unesco_only', 'true');
+      if (params.sort_by) q.append('sort_by', params.sort_by);
+      if (params.page) q.append('page', String(params.page));
+      if (params.page_size) q.append('page_size', String(params.page_size));
+
+      const res = await fetch(`${API_BASE}/api/tourism/destinations?${q.toString()}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend tourism destinations endpoint offline', e);
+    }
+    return { total: 0, destinations: [] };
+  },
+
+  async getDestinationById(id: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/destinations/${id}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend tourism destination detail offline', e);
+    }
+    return null;
+  },
+
+  async searchWorldwidePlaces(query: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/search-world?query=${encodeURIComponent(query)}`, {
+        method: 'POST'
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend worldwide place search offline', e);
+    }
+    return { query, results: [] };
+  },
+
+  async getNearbyPlaces(latitude: number, longitude: number, radius_km: number = 2000): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/nearby`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latitude, longitude, radius_km })
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend nearby places offline', e);
+    }
+    return { count: 0, results: [] };
+  },
+
+  async planMultiStopRoute(destination_ids: string[]): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/plan-route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destination_ids })
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend route planner offline', e);
+    }
+    return { total_waypoints: 0, total_distance_km: 0, legs: [] };
+  },
+
+  async getAIRecommendations(params: {
+    prompt?: string;
+    continent?: string;
+    category?: string;
+    max_budget_inr?: number;
+    vibe?: string;
+    season?: string;
+  }): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/ai-recommend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend AI recommend offline', e);
+    }
+    return { recommendations: [] };
+  },
+
+  async getWorldStats(): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/api/tourism/world-stats`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend world stats offline', e);
+    }
+    return { total_destinations: 0, continents_covered: {} };
   }
 };
