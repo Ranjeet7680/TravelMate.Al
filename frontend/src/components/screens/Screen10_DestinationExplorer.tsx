@@ -112,6 +112,21 @@ export const Screen10_DestinationExplorer: React.FC = () => {
     'टोक्यो': 'tokyo',
     'पेरिस': 'paris',
     'स्विट्जरलैंड': 'swiss',
+    'पुरी': 'puri',
+    'हम्पी': 'hampi',
+    'अमृतसर': 'amritsar',
+    'जैसलमेर': 'jaisalmer',
+    'ऊटी': 'ooty',
+    'कोड़ाईकनाल': 'kodaikanal',
+    'शिमला': 'shimla',
+    'मसूरी': 'mussoorie',
+    'पटना': 'patna',
+    'भुवनेश्वर': 'bhubaneswar',
+    'सैंटोरिनी': 'santorini',
+    'एम्स्टर्डम': 'amsterdam',
+    'बार्सिलोना': 'barcelona',
+    'कुआलालंपुर': 'kualalumpur',
+    'हनोई': 'hanoi',
   };
 
   // Filter logic
@@ -407,6 +422,9 @@ export const Screen10_DestinationExplorer: React.FC = () => {
           <img
             src={selectedDest.image}
             alt={selectedDest.name}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
+            }}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/90 via-midnight-navy/30 to-transparent" />
@@ -528,12 +546,17 @@ export const Screen10_DestinationExplorer: React.FC = () => {
               }`}
             >
               <div>
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-48 overflow-hidden bg-slate-900">
                   <img
                     src={dest.image}
                     alt={dest.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
                   
                   {/* Top rating */}
                   <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">

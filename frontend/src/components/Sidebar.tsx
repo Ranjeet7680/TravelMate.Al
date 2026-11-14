@@ -46,10 +46,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const menuItems: { screen?: ScreenType; action?: () => void; label: string; icon: React.ReactNode; badge?: string | number }[] = [
-    { action: () => setViewMode(viewMode === 'mobile' ? 'desktop' : 'mobile'), label: '📱 Mobile App View', icon: <Smartphone className="w-4 h-4 text-ai-purple" />, badge: 'iOS/App' },
     { screen: '05-dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { screen: '06-copilot', label: 'AI Travel Copilot', icon: <Bot className="w-4 h-4" />, badge: 'AI' },
-    { screen: '10-destinations', label: 'Destination Explorer', icon: <Compass className="w-4 h-4" />, badge: '37+' },
+    { screen: '10-destinations', label: 'Destination Explorer', icon: <Compass className="w-4 h-4" />, badge: '50+' },
     { action: () => openMarketplace('packages'), label: 'Holiday Packages', icon: <Sparkles className="w-4 h-4 text-amber-500" />, badge: 'Deals' },
     { action: () => openMarketplace('cabs'), label: 'Cabs & Rentals', icon: <Plane className="w-4 h-4 text-sky-500" /> },
     { screen: '07-planner', label: 'Plan Trip', icon: <CalendarDays className="w-4 h-4" /> },

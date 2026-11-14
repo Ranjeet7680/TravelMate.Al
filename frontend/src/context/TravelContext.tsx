@@ -15,6 +15,7 @@ import {
   DHANBAD_DUBAI_10DAY_ITINERARY, 
   DUBAI_FLIGHT_OPTIONS, 
   DUBAI_HOTEL_OPTIONS, 
+  EXPLORER_DESTINATIONS,
   INITIAL_AGENTS 
 } from '../data/travelData';
 
@@ -294,7 +295,20 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setChatMessages(prev => [...prev, userMsg]);
 
     const lower = prompt.toLowerCase();
-    const isDubaiQuery = lower.includes('dubai') || lower.includes('dhanbad') || lower.includes('10 days');
+
+    // Check if user requested a specific destination from our 52 locations
+    const matchedDest = EXPLORER_DESTINATIONS.find(d => {
+      const dName = d.name.toLowerCase();
+      const dCity = d.city.toLowerCase();
+      const keywords = [
+        ...dName.replace(/&/g, '/').split('/'),
+        ...dCity.replace(/&/g, '/').split('/'),
+        ...(d.state ? [d.state.toLowerCase()] : [])
+      ].map(k => k.trim()).filter(k => k.length >= 3);
+      return keywords.some(k => lower.includes(k));
+    });
+
+    const isDubaiQuery = lower.includes('dubai') || (lower.includes('dhanbad') && lower.includes('10 days'));
 
     if (isDubaiQuery) {
       updateAgentStatus('orchestrator', 'thinking', 'Delegating intent to 11 agents: Dhanbad ➔ Dubai (10 Days)');
@@ -303,7 +317,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateAgentStatus('visa', 'searching', 'Validating UAE 30-Day tourist eVisa requirements for Indian passport...');
       updateAgentStatus('budget', 'thinking', 'Modeling estimated total trip budget in INR (₹85k - ₹125k)...');
 
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 900));
 
       updateAgentStatus('planner', 'completed', 'Synthesized 10-day comprehensive itinerary');
       updateAgentStatus('flight', 'completed', 'Found Emirates direct flight starting ₹32,500');
@@ -312,11 +326,11 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateAgentStatus('budget', 'completed', 'Estimated total: ₹97,000 (Flights + 9 nights + Activities)');
 
       const responseText = `Great choice! 🌴 Here's a quick plan for your 10-day Dubai trip:\n\n` +
-        `✈️ **Flights**: from ₹32,500 (round trip)\n` +
-        `🏨 **Hotels**: from ₹4,500/night\n` +
-        `🗺️ **Itinerary**: Top sights, activities & day plan\n` +
-        `💰 **Est. Budget**: ₹85,000 - ₹1,25,000\n` +
-        `🛂 **Visa**: E-Visa (for Indian passport)`;
+        `✈️ **Flights**: from ₹32,500 (round trip via Emirates / IndiGo)\n` +
+        `🏨 **Hotels**: from ₹4,500/night (Rove Downtown with Burj Khalifa views)\n` +
+        `🗺️ **Itinerary**: Day-by-day plan covering Burj Khalifa, Desert Safari, Palm Jumeirah & Abu Dhabi\n` +
+        `💰 **Est. Budget**: ₹85,000 - ₹1,25,000 (Safe within your ₹1,50,000 cap!)\n` +
+        `🛂 **Visa**: 30-Day Tourist eVisa (2–3 business days processing for Indian passport)`;
 
       const copilotResponse: AgentChatMessage = {
         id: `ai-${Date.now()}`,
@@ -347,26 +361,120 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
 
       setChatMessages(prev => [...prev, copilotResponse]);
-      speakText("Great choice! Here is a quick plan for your 10-day Dubai trip with flights from 32,500 rupees and hotels from 4,500 per night.");
+      speakText("Great choice! Here is a plan for your 10-day Dubai trip with flights from 32,500 rupees and hotels from 4,500 per night.");
       setActiveTrip(DHANBAD_DUBAI_10DAY_ITINERARY);
+    } else if (matchedDest) {
+      // Dynamic multi-agent planning for any destination in our 52 locations
+      const daysMatch = prompt.match(/(\d+)\s*(days?|दिन)/i);
+      const days = daysMatch ? parseInt(daysMatch[1], 10) : (matchedDest.region === 'India' ? (matchedDest.distanceDhanbadKm < 300 ? 3 : 5) : 7);
+
+      let transitAdvice = '';
+      let transitCost = 0;
+      if (matchedDest.distanceDhanbadKm <= 200) {
+        transitAdvice = `Direct AC Outstation Cab or Express Train from Dhanbad (2–4 hours, ~₹2,200 – ₹3,500)`;
+        transitCost = 3000;
+      } else if (matchedDest.distanceDhanbadKm <= 500) {
+        transitAdvice = `Vande Bharat Express / Intercity Train or Dedicated Highway Cab (~₹3,500 – ₹6,000)`;
+        transitCost = 4500;
+      } else if (matchedDest.region === 'India') {
+        transitAdvice = `Direct Flights from Ranchi (IXR) / Kolkata (CCU) or Rajdhani / Vande Bharat Express (from ~₹4,800 round trip)`;
+        transitCost = 9000;
+      } else {
+        transitAdvice = `International Flights departing from Kolkata (CCU) / Delhi (DEL) (from ~₹28,000 round trip)`;
+        transitCost = 32000;
+      }
+
+      const nightRate = Math.round(matchedDest.dailyBudgetINR * 0.85);
+      const totalStay = nightRate * (days - 1);
+      const totalEst = Math.round((matchedDest.dailyBudgetINR * days) + transitCost);
+
+      updateAgentStatus('orchestrator', 'thinking', `Delegating itinerary synthesis for ${matchedDest.name} (${days} Days)...`);
+      updateAgentStatus('destination', 'searching', `Indexing sightseeing hubs and seasonality for ${matchedDest.name}...`);
+      updateAgentStatus('flight', 'searching', `Scanning transit options from Dhanbad base / CCU / IXR...`);
+      updateAgentStatus('hotel', 'searching', `Shortlisting rated stays around ${matchedDest.city}...`);
+      updateAgentStatus('budget', 'thinking', `Calculating cost matrix in ${currency}...`);
+      updateAgentStatus('visa', 'completed', `IATA check: ${matchedDest.visa}`);
+
+      await new Promise(r => setTimeout(r, 900));
+
+      updateAgentStatus('planner', 'completed', `Synthesized ${days}-day custom plan for ${matchedDest.name}`);
+      updateAgentStatus('flight', 'completed', `Transit route locked (${transitAdvice.slice(0, 35)}...)`);
+      updateAgentStatus('hotel', 'completed', `Found top-rated stays starting ₹${nightRate.toLocaleString('en-IN')}/night`);
+      updateAgentStatus('budget', 'completed', `Est. total ₹${totalEst.toLocaleString('en-IN')}`);
+
+      const responseText = `🌟 **${matchedDest.name} AI Travel Plan (${days} Days)**\n` +
+        `📍 **Destination**: ${matchedDest.city}, ${matchedDest.state ? matchedDest.state + ', ' : ''}${matchedDest.country} (${matchedDest.tag})\n\n` +
+        `✈️ **Transit & Route**: ${transitAdvice}\n` +
+        `🏨 **Recommended Stays**: Verified hotels from ₹${nightRate.toLocaleString('en-IN')}/night (${days - 1} nights ~ ₹${totalStay.toLocaleString('en-IN')})\n` +
+        `🗺️ **Must-Experience Highlights**:\n${matchedDest.highlights.slice(0, 4).map(h => `• ${h}`).join('\n')}\n` +
+        `🍲 **Local Gastronomy**: ${matchedDest.cuisine}\n` +
+        `💰 **Est. Total Budget**: ₹${totalEst.toLocaleString('en-IN')} (Includes Travel, Hotel, Activities & Food)\n` +
+        `🛂 **Entry & Visa**: ${matchedDest.visa}\n` +
+        `☀️ **Best Travel Window**: ${matchedDest.bestSeason}`;
+
+      const copilotResponse: AgentChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'copilot',
+        agentRole: 'planner',
+        text: responseText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        agentThoughtTrace: [
+          { agentId: 'orchestrator', action: `Dispatched multi-agent task for ${matchedDest.name} (${days} Days)`, status: 'done' },
+          { agentId: 'destination', action: `Retrieved top sights, best season (${matchedDest.bestSeason}) and food guide`, status: 'done' },
+          { agentId: 'flight', action: `Transit locked: ${transitAdvice.slice(0, 45)}...`, status: 'done' },
+          { agentId: 'hotel', action: `Selected top hospitality starting ₹${nightRate.toLocaleString('en-IN')}/night`, status: 'done' },
+          { agentId: 'budget', action: `Estimated trip cost: ₹${totalEst.toLocaleString('en-IN')} across ${days} days`, status: 'done' },
+          { agentId: 'visa', action: `Regulatory entry rule: ${matchedDest.visa}`, status: 'done' },
+        ]
+      };
+
+      setChatMessages(prev => [...prev, copilotResponse]);
+      speakText(`Here is your ${days} day travel plan for ${matchedDest.name}. Total estimated budget is ${totalEst.toLocaleString('en-IN')} rupees.`);
     } else {
       updateAgentStatus('orchestrator', 'thinking', `Processing request: "${prompt}"...`);
       updateAgentStatus('destination', 'searching', 'Scanning destination knowledge graph...');
+      updateAgentStatus('planner', 'thinking', 'Analyzing travel inquiry and formulating advice...');
       
-      await new Promise(r => setTimeout(r, 700));
+      await new Promise(r => setTimeout(r, 800));
 
-      updateAgentStatus('planner', 'completed', 'Recommendation compiled');
-      updateAgentStatus('destination', 'completed', 'Attractions indexed');
+      updateAgentStatus('planner', 'completed', 'Synthesized personalized travel guidance');
+      updateAgentStatus('destination', 'completed', '52 destinations available for instant trip generation');
 
-      const genericResponse: AgentChatMessage = {
+      let responseText = '';
+      if (lower.includes('visa') || lower.includes('passport')) {
+        responseText = `🛂 **Visa & Immigration Advisory (IATA Timatic Engine)**\n\n` +
+          `• **Domestic Travel (India)**: No visa or passport required. Valid Government ID (Aadhaar / Voter ID / Driving License) is sufficient for all flights and hotel check-ins.\n` +
+          `• **Visa-Free / Visa on Arrival for Indian Passports**: Thailand (60 days), Malaysia (30 days), Maldives (30 days VoA), Sri Lanka (ETA).\n` +
+          `• **Fast E-Visas (2-4 Days)**: UAE / Dubai (30 Days), Vietnam, Indonesia (Bali e-VoA), Egypt, Turkey.\n` +
+          `• **Consular Visas Required**: Schengen States (France, Switzerland, Italy, Greece), United Kingdom, USA (B1/B2).\n\n` +
+          `Would you like me to check the exact checklist and embassy processing times for a specific country?`;
+      } else if (lower.includes('budget') || lower.includes('cost') || lower.includes('calculate')) {
+        responseText = `💰 **AI Budget Optimizer & Dynamic Cost Model**\n\n` +
+          `To calculate an accurate budget, I factor in:\n` +
+          `1. **Transit**: Outstation Cab vs Train vs Direct Flights (from Dhanbad / Ranchi / Kolkata).\n` +
+          `2. **Stay Tier**: Budget homestays (₹1,500/night), 4★ Boutique hotels (₹4,200/night), or 5★ Luxury resorts (₹12,000+/night).\n` +
+          `3. **Daily Food & Sightseeing**: Regional averages from ₹800/day to ₹4,500/day.\n` +
+          `4. **Forex & Taxes**: 5% TCS buffer + zero-markup currency hedging.\n\n` +
+          `Tell me your dream destination and duration (e.g. *'3 days in Kashmir'* or *'5 days in Bali'*), and I will build your itemized cost matrix!`;
+      } else {
+        responseText = `Hello Ranjeet! 🌴 I am your **TravelMate AI Copilot**, backed by a 13-agent autonomous swarm.\n\n` +
+          `I have indexed **52 verified destinations** across India and the globe. I can:\n` +
+          `• 🗺️ **Generate Full Itineraries**: Just say *"Plan a 3-day trip to Netarhat"* or *"5 days in Tokyo"*.\n` +
+          `• ✈️ **Search Live Transit**: Direct trains, outstation cabs, and flight routes from Dhanbad, Ranchi & Kolkata.\n` +
+          `• 🏨 **Shortlist Stays**: Compare verified hotels with transparent night rates.\n` +
+          `• 🛂 **Verify Visa Rules**: Instant IATA passport entry checks.\n\n` +
+          `Where would you like to travel next?`;
+      }
+
+      const copilotResponse: AgentChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'copilot',
-        agentRole: 'destination',
-        text: `I've analyzed your request: "${prompt}".\n\nOur Destination and Planner agents have curated tailored travel options for you. Would you like me to generate a full day-by-day itinerary, compare live flights, or check entry visa regulations?`,
+        agentRole: 'planner',
+        text: responseText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setChatMessages(prev => [...prev, genericResponse]);
-      speakText(`I have processed your request for ${prompt}. Let me know if you would like me to generate flights or a day-by-day itinerary.`);
+      setChatMessages(prev => [...prev, copilotResponse]);
+      speakText("I am your AI Travel Copilot. Ready to plan flights, hotels, or custom itineraries for any of our 52 destinations.");
     }
   };
 

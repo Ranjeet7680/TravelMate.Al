@@ -75,8 +75,18 @@ class MultiAgentOrchestrator:
         thoughts = []
         cards = []
 
+        # Match any destination across the knowledge base
+        matched_dest = None
+        for key, d in self.destination_agent.destinations.items():
+            city_name = d.get("name", "").lower()
+            keywords = [k.strip() for k in key.replace("&", "/").split("/") if len(k.strip()) >= 3]
+            keywords += [k.strip() for k in city_name.replace("&", "/").split("/") if len(k.strip()) >= 3]
+            if any(kw in msg_lower for kw in keywords):
+                matched_dest = d
+                break
+
         # Handle Dhanbad to Dubai 10 days flagship query
-        if any(kw in msg_lower for kw in ["dubai", "dhanbad", "10 days", "itinerary", "plan a trip"]):
+        if "dubai" in msg_lower or (not matched_dest and any(kw in msg_lower for kw in ["10 days", "dhanbad to dubai"])):
             # 1. Orchestrator Analysis
             thoughts.append({
                 "agent_id": "orchestrator",
@@ -207,17 +217,130 @@ class MultiAgentOrchestrator:
                 "timestamp": datetime.now().strftime("%I:%M %p")
             }
 
-        # General response
-        dest_info = self.destination_agent.get_destination_info(destination)
+        if matched_dest:
+            d_name = matched_dest.get("name", "Destination")
+            d_country = matched_dest.get("country", "India")
+            d_state = matched_dest.get("state", "")
+            d_budget = float(matched_dest.get("daily_budget_inr", 2500))
+            d_season = matched_dest.get("best_season", "October - March")
+            d_dist = int(matched_dest.get("distance_from_dhanbad_km", 500))
+            d_visa = matched_dest.get("visa", "Not Required")
+            d_highlights = matched_dest.get("highlights", ["Scenic City Center", "Heritage Walking Tour", "Local Food Trail"])
+            d_cuisine = matched_dest.get("cuisine", "Regional specialties and local delicacies")
+
+            plan_days = 3 if d_dist < 400 else 5
+
+            if d_dist <= 250:
+                transit_txt = f"Direct AC Outstation Cab or Intercity Express from Dhanbad (2–4 hrs, ~₹2,200 – ₹3,500)"
+                transit_cost = 2800
+            elif d_dist <= 600:
+                transit_txt = f"Vande Bharat Express / Superfast Train or Highway Highway Cab (~₹3,500 – ₹5,500)"
+                transit_cost = 4200
+            elif d_country.lower() == "india":
+                transit_txt = f"Flights via Ranchi (IXR) / Kolkata (CCU) or Rajdhani Express (~₹5,000 – ₹9,000 round trip)"
+                transit_cost = 8500
+            else:
+                transit_txt = f"International Flights from Kolkata CCU / Delhi DEL (from ~₹28,000 round trip)"
+                transit_cost = 32000
+
+            night_rate = int(d_budget * 0.85)
+            total_est = int((d_budget * plan_days) + transit_cost)
+
+            thoughts.append({
+                "agent_id": "orchestrator",
+                "action": f"Dispatched multi-agent task for '{d_name}' ({plan_days} Days)",
+                "status": "done",
+                "details": f"Coordinating mobility, lodging, and pricing agents for {d_name}."
+            })
+            thoughts.append({
+                "agent_id": "destination",
+                "action": f"Indexed seasonal window and top highlights for {d_name}",
+                "status": "done",
+                "details": f"Optimal window: {d_season}. Highlights: {', '.join(d_highlights[:3])}."
+            })
+            thoughts.append({
+                "agent_id": "flight",
+                "action": f"Transit route locked: {transit_txt[:40]}...",
+                "status": "done",
+                "details": f"Distance from Dhanbad base: {d_dist} km."
+            })
+            thoughts.append({
+                "agent_id": "budget",
+                "action": f"Dynamic cost modeled: ~₹{total_est:,} total",
+                "status": "done",
+                "details": f"Includes {plan_days} days of stays, meals, activities, and round-trip transit."
+            })
+
+            reply_text = (
+                f"🌟 **{d_name} AI Travel Plan ({plan_days} Days)**\n"
+                f"📍 **Location**: {d_name}{', ' + d_state if d_state else ''}, {d_country}\n\n"
+                f"✈️ **Transit & Route**: {transit_txt}\n"
+                f"🏨 **Recommended Stays**: Verified hotels from ₹{night_rate:,}/night\n"
+                f"🗺️ **Must-Experience Highlights**:\n" + "\n".join([f"• {h}" for h in d_highlights[:4]]) + "\n"
+                f"🍲 **Local Gastronomy**: {d_cuisine}\n"
+                f"💰 **Est. Total Budget**: ₹{total_est:,} (Stay, Meals, Transit & Sightseeing)\n"
+                f"🛂 **Entry & Visa**: {d_visa}\n"
+                f"☀️ **Best Travel Season**: {d_season}"
+            )
+
+            return {
+                "reply": reply_text,
+                "agent_id": "planner",
+                "agent_thoughts": thoughts,
+                "cards": [
+                    {
+                        "type": "destination_preview",
+                        "data": {
+                            "name": d_name,
+                            "country": d_country,
+                            "daily_budget": d_budget,
+                            "rating": matched_dest.get("rating", 4.7),
+                            "highlights": d_highlights
+                        }
+                    }
+                ],
+                "timestamp": datetime.now().strftime("%I:%M %p")
+            }
+
+        # General helpful AI travel response
         thoughts.append({
-            "agent_id": "destination",
-            "action": f"Queried destination knowledge base for '{message}'",
+            "agent_id": "orchestrator",
+            "action": f"Processed general travel inquiry: '{message}'",
             "status": "done",
-            "details": f"Retrieved climate, seasonal windows, and top attractions for {dest_info['name']}."
+            "details": "13-agent consensus engine active across 52 worldwide and domestic destinations."
         })
 
+        if any(kw in msg_lower for kw in ["visa", "passport", "timatic"]):
+            reply_text = (
+                "🛂 **IATA Timatic Visa Advisory**:\n\n"
+                "• **Domestic (India)**: No passport or visa needed. Aadhaar / Voter ID valid for all flights and hotels.\n"
+                "• **Visa-Free / VoA for Indian Passports**: Thailand (60 days), Malaysia (30 days), Maldives (30 days VoA), Sri Lanka (ETA).\n"
+                "• **Fast eVisa (2–4 Days)**: UAE / Dubai (30 Days), Vietnam, Indonesia (Bali e-VoA), Egypt.\n"
+                "• **Consular Visas**: Schengen States, United Kingdom, USA (B1/B2).\n\n"
+                "Specify your destination to generate the exact document checklist and processing times."
+            )
+        elif any(kw in msg_lower for kw in ["budget", "cost", "price", "calculate"]):
+            reply_text = (
+                "💰 **AI Dynamic Budget Engine**:\n\n"
+                "I calculate itemized travel expenses based on real-time parameters:\n"
+                "1. **Transit**: Outstation cab vs Vande Bharat Express vs direct airfare.\n"
+                "2. **Accommodation**: Budget stays (₹1,500/night), 4★ Boutique (₹4,200/night), or 5★ Luxury (₹12,000+/night).\n"
+                "3. **Daily Living**: Meals, attractions, passes, and 5% emergency buffer.\n\n"
+                "Tell me your target destination and days (e.g. *'3 days in Netarhat'* or *'5 days in Tokyo'*), and I will generate your budget breakdown."
+            )
+        else:
+            reply_text = (
+                "Hello! 🌴 I am your **TravelMate AI Copilot**, backed by our 13-agent autonomous swarm.\n\n"
+                "I have indexed **52 verified destinations** across India and the globe. You can ask me to:\n"
+                "• 🗺️ **Generate Full Itineraries**: e.g., *'Plan 3 days in Deoghar'* or *'5 days in Bali'*\n"
+                "• ✈️ **Check Transit Routes**: Direct trains, cabs, and flights from Dhanbad base\n"
+                "• 🏨 **Compare Hotels & Stays**: Verified hotels with transparent pricing\n"
+                "• 🛂 **Verify Visa Regulations**: Instant IATA passport entry rules\n\n"
+                "Where would you like to travel next?"
+            )
+
         return {
-            "reply": f"TravelMate AI Copilot is standing by. All 11 autonomous agents are online to help you plan, book, or optimize your journey. Would you like to review flights, hotel stays, or a custom 10-day itinerary?",
+            "reply": reply_text,
             "agent_id": "copilot",
             "agent_thoughts": thoughts,
             "cards": [],

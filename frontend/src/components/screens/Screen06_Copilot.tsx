@@ -101,7 +101,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, o
           </div>
 
           {/* CTA action buttons inside copilot card */}
-          {!isUser && done && text.includes('Flights') && text.includes('Hotels') && (
+          {!isUser && done && (text.includes('Flights') || text.includes('Transit') || text.includes('Hotels') || text.includes('Plan')) && (
             <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-700/60 mt-3">
               <button
                 onClick={onActionItinerary}
