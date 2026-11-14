@@ -47,11 +47,49 @@ const MainLayout: React.FC = () => {
   } = useTravel();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Splash screen gets full screen immersive view
+  // Standalone Fullscreen Screens (No Sidebar, No Dashboard Header)
+  if (currentScreen === '03-landing') {
+    return (
+      <div className="min-h-screen flex flex-col font-sans bg-white dark:bg-[#070b14] text-[#101d42] dark:text-[#f8fafc] animate-fade-in">
+        <Screen03_Landing />
+        <ProUpgradeModal />
+        <AuthModal />
+        <NotificationModal 
+          isOpen={notificationModalOpen} 
+          onClose={() => setNotificationModalOpen(false)} 
+        />
+        <MarketplaceBookingModal
+          isOpen={marketplaceModalOpen}
+          onClose={() => setMarketplaceModalOpen(false)}
+          initialTab={marketplaceTab}
+        />
+      </div>
+    );
+  }
+
+  if (currentScreen === '04-login') {
+    return (
+      <div className="min-h-screen flex flex-col font-sans bg-[#f8fafc] dark:bg-[#080d1a] text-[#101d42] dark:text-[#f8fafc] animate-fade-in">
+        <Screen04_Login />
+        <ProUpgradeModal />
+        <AuthModal />
+      </div>
+    );
+  }
+
   if (currentScreen === '01-welcome') {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col font-sans bg-slate-950 text-white animate-fade-in">
         <Screen01_Splash />
+        <ProUpgradeModal />
+      </div>
+    );
+  }
+
+  if (currentScreen === '02-onboarding') {
+    return (
+      <div className="min-h-screen flex flex-col font-sans bg-slate-950 text-white animate-fade-in">
+        <Screen02_Onboarding />
       </div>
     );
   }
@@ -141,9 +179,6 @@ const MainLayout: React.FC = () => {
               <MobileAppSimulator onClose={() => setViewMode('desktop')} />
             ) : (
               <>
-                {currentScreen === '02-onboarding' && <Screen02_Onboarding />}
-                {currentScreen === '03-landing' && <Screen03_Landing />}
-                {currentScreen === '04-login' && <Screen04_Login />}
                 {currentScreen === '05-dashboard' && <Screen05_Dashboard />}
                 {currentScreen === '06-copilot' && <Screen06_Copilot />}
                 {currentScreen === '07-planner' && <Screen07_TripPlannerWizard />}

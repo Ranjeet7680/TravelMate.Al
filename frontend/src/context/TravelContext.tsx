@@ -103,8 +103,8 @@ interface TravelContextType {
 const TravelContext = createContext<TravelContextType | undefined>(undefined);
 
 export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Start on 03-landing or 05-dashboard as desired; default to 05-dashboard or 03-landing
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('05-dashboard');
+  // Default initial public view is 03-landing (Apple-style Landing Page)
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('03-landing');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [currency, setCurrency] = useState<Currency>('INR');
   const [language, setLanguage] = useState<LanguageCode>('en');

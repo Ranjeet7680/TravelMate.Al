@@ -59,7 +59,8 @@ export const Screen04_Login: React.FC = () => {
         email: emailOrPhone.includes('@') ? emailOrPhone : 'ranjeet.travels@travelmate.ai',
       }));
       setTimeout(() => {
-        setCurrentScreen('05-dashboard');
+        // Navigate to Loading Showcase, which then launches the Dashboard
+        setCurrentScreen('01-welcome');
       }, 700);
     }, 800);
   };
@@ -75,7 +76,8 @@ export const Screen04_Login: React.FC = () => {
         email: 'ranjeet.passkey@travelmate.ai',
       }));
       setTimeout(() => {
-        setCurrentScreen('05-dashboard');
+        // Navigate to Loading Showcase, which then launches the Dashboard
+        setCurrentScreen('01-welcome');
       }, 700);
     }, 900);
   };
@@ -89,7 +91,8 @@ export const Screen04_Login: React.FC = () => {
         name: 'Ranjeet (Google)',
         email: 'ranjeet.google@travelmate.ai',
       }));
-      setCurrentScreen('05-dashboard');
+      // Navigate to Loading Showcase, which then launches the Dashboard
+      setCurrentScreen('01-welcome');
     }, 600);
   };
 
@@ -114,10 +117,9 @@ export const Screen04_Login: React.FC = () => {
 
               <button
                 onClick={() => setCurrentScreen('03-landing')}
-                className="text-xs font-bold text-slate-400 hover:text-ai-purple transition flex items-center gap-1"
+                className="text-xs font-bold text-slate-500 hover:text-ai-purple transition flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <span>Landing Page</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>← Back to Landing</span>
               </button>
             </div>
 
@@ -446,7 +448,7 @@ export const Screen04_Login: React.FC = () => {
 
             <div className="pt-2">
               <button
-                onClick={() => setCurrentScreen('05-dashboard')}
+                onClick={() => setCurrentScreen('01-welcome')}
                 className="w-full py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition flex items-center justify-center gap-2 backdrop-blur-md"
               >
                 <span>Explore Dashboard as Guest</span>

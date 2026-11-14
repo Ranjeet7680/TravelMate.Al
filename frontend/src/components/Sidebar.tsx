@@ -27,7 +27,8 @@ import {
   Smartphone,
   Globe,
   Lock,
-  ArrowRightLeft
+  ArrowRightLeft,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -51,8 +52,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const menuItems: { screen?: ScreenType; action?: () => void; label: string; icon: React.ReactNode; badge?: string | number }[] = [
-    { screen: '03-landing', label: 'Landing Page', icon: <Globe className="w-4 h-4 text-sky-500" /> },
-    { screen: '04-login', label: 'Login / Sign In', icon: <Lock className="w-4 h-4 text-emerald-500" />, badge: 'Vault' },
     { screen: '05-dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { screen: '19-compare', label: 'Compare & Book', icon: <ArrowRightLeft className="w-4 h-4 text-indigo-500" />, badge: 'OTA' },
     { screen: '06-copilot', label: 'AI Travel Copilot', icon: <Bot className="w-4 h-4" />, badge: 'AI' },
@@ -71,7 +70,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { screen: '16-voice', label: 'Voice AI & SOS', icon: <Mic className="w-4 h-4" /> },
     { screen: '17-profile', label: 'Profile & Settings', icon: <Settings className="w-4 h-4" /> },
     { screen: '18-admin', label: 'Admin Portal', icon: <Server className="w-4 h-4" /> },
-    { screen: '01-welcome', label: 'Loading Showcase', icon: <Sparkles className="w-4 h-4 text-ai-purple" /> },
   ];
 
   const handleNav = (itemOrScreen: { screen?: ScreenType; action?: () => void } | ScreenType) => {
@@ -192,13 +190,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </div>
         )}
 
-        {/* Theme toggle & quick links */}
+        {/* Theme toggle & sign out */}
         <div className="flex items-center justify-between px-2 text-xs text-slate-400">
           <button
-            onClick={() => handleNav('01-welcome')}
-            className="hover:text-ai-purple transition font-medium"
+            onClick={() => handleNav('03-landing')}
+            className="hover:text-rose-500 text-slate-500 dark:text-slate-400 transition font-bold text-[11px] flex items-center gap-1.5"
+            title="Sign out and return to landing page"
           >
-            Splash Screen
+            <LogOut className="w-3.5 h-3.5 text-rose-500" />
+            <span>Sign Out</span>
           </button>
           <button
             onClick={toggleTheme}

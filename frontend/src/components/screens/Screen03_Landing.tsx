@@ -27,7 +27,8 @@ import {
   Activity,
   Check,
   X,
-  Play
+  Play,
+  Crown
 } from 'lucide-react';
 
 interface AppleShowcaseDest {
@@ -98,7 +99,7 @@ const APPLE_FEATURED_DESTINATIONS: AppleShowcaseDest[] = [
 ];
 
 export const Screen03_Landing: React.FC = () => {
-  const { setCurrentScreen, currency, sendUserPrompt, searchFilter, setSearchFilter } = useTravel();
+  const { setCurrentScreen, currency, sendUserPrompt, searchFilter, setSearchFilter, setProModalOpen } = useTravel();
 
   const [activeTab, setActiveTab] = useState<'flights' | 'hotels' | 'packages' | 'activities'>('flights');
   const [fromCity, setFromCity] = useState(searchFilter.origin);
@@ -150,7 +151,57 @@ export const Screen03_Landing: React.FC = () => {
   const showcase = APPLE_FEATURED_DESTINATIONS[activeShowcaseIdx];
 
   return (
-    <div className="space-y-24 pb-24 select-none animate-page-enter">
+    <div className="space-y-16 pb-24 select-none animate-page-enter">
+      {/* ── Apple Style Floating Navbar ── */}
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200/60 dark:border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all shadow-sm">
+        <div 
+          onClick={() => setCurrentScreen('03-landing')}
+          className="flex items-center gap-3 cursor-pointer group"
+        >
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#7956f5] to-[#3478f6] flex items-center justify-center shadow-md shadow-purple-500/25 group-hover:scale-105 transition">
+            <Compass className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <span className="font-black text-lg tracking-tight text-midnight-navy dark:text-white flex items-center gap-1.5">
+              <span>TravelMate<span className="text-ai-purple">.AI</span></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </span>
+            <span className="text-[10px] text-slate-400 font-semibold block -mt-1">Team Innovation 27X7</span>
+          </div>
+        </div>
+
+        {/* Center Nav Links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <button onClick={() => setCurrentScreen('10-destinations')} className="hover:text-ai-purple transition">
+            Global Explorer (3D)
+          </button>
+          <button onClick={() => setCurrentScreen('19-compare')} className="hover:text-ai-purple transition">
+            Compare & Book (OTA)
+          </button>
+          <button onClick={() => setProModalOpen(true)} className="hover:text-ai-purple transition flex items-center gap-1">
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+            <span>Pro Membership</span>
+          </button>
+        </nav>
+
+        {/* Right Action Buttons */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setCurrentScreen('04-login')}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-midnight-navy dark:text-white hover:text-ai-purple transition flex items-center gap-1.5 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <Lock className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Sign In</span>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('04-login')}
+            className="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all"
+          >
+            <span>Get Started</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </header>
 
       {/* ── 1. Apple Hero Section: Typography, Lighting & Dynamic Showcase ── */}
       <section className="relative px-4 pt-12 pb-20 overflow-hidden">

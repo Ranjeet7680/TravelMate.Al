@@ -127,6 +127,16 @@ export const Screen01_Splash: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Auto-navigate to dashboard once loading finishes
+  useEffect(() => {
+    if (isLoaded) {
+      const navTimer = setTimeout(() => {
+        setCurrentScreen('05-dashboard');
+      }, 700);
+      return () => clearTimeout(navTimer);
+    }
+  }, [isLoaded, setCurrentScreen]);
+
   // Update telemetry text with progress
   useEffect(() => {
     const step = Math.min(Math.floor((progress / 100) * TELEMETRY_STEPS.length), TELEMETRY_STEPS.length - 1);
@@ -281,29 +291,21 @@ export const Screen01_Splash: React.FC = () => {
           </div>
         </div>
 
-        {/* ── Journey Flow CTAs: Loading -> Login / Sign In -> Dashboard ── */}
+        {/* ── Journey Flow Action ── */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md pt-2">
           <button
-            onClick={() => setCurrentScreen('04-login')}
-            className="w-full sm:w-auto flex-1 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-ai-purple via-indigo-600 to-ocean-blue hover:from-purple-500 hover:to-sky-500 text-white font-extrabold text-xs shadow-xl shadow-purple-500/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+            onClick={() => setCurrentScreen('05-dashboard')}
+            className="w-full sm:w-auto flex-1 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-ai-purple via-indigo-600 to-ocean-blue hover:from-purple-500 hover:to-sky-500 text-white font-extrabold text-xs shadow-xl shadow-purple-500/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
           >
-            <Lock className="w-4 h-4" />
-            <span>Login / Sign In</span>
+            <span>{isLoaded ? 'Entering Dashboard...' : 'Launch Dashboard Now'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
 
           <button
             onClick={() => setCurrentScreen('03-landing')}
-            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 text-white text-xs font-bold border border-white/10 transition-all hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-bold border border-white/15 transition-all hover:scale-105 active:scale-95"
           >
-            Landing Page
-          </button>
-
-          <button
-            onClick={() => setCurrentScreen('05-dashboard')}
-            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold border border-white/15 transition-all hover:scale-105 active:scale-95"
-          >
-            Dashboard
+            ← Exit to Landing
           </button>
         </div>
       </div>
