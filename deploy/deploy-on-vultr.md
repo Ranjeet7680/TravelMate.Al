@@ -1,114 +1,155 @@
-# Deploy on Vultr
+# Deploy TravelMate AI on Vultr
+### **Team Innovation 27X7 — AI Agents & Intelligent Systems**
 
-This guide puts your app live on the internet with a Vultr Cloud Compute server and Docker. It takes about 15 minutes and works for every template in this repo.
+This guide puts your **TravelMate AI** platform live on the internet using a **Vultr Cloud Compute** server and Docker. It takes about 10–15 minutes and covers the full stack (React 19 Frontend, FastAPI 13-Agent Backend, and datasets).
 
-**Before you start:** claim your $200 Vultr credits (see the HackGlobal Hacker Guide). The smallest server plan is enough for a hackathon demo.
+**Before you start:** Claim your $200 Vultr credits in the Vultr Console. A standard Cloud Compute plan (1 GB or 2 GB RAM) is sufficient for judging.
 
-## 1. Create a server
+---
 
-1. Log in to the [Vultr Console](https://my.vultr.com) and click **Deploy** (or **Deploy +**), then **Deploy New Server**.
+## 1. Create a Server on Vultr
+
+1. Log in to the [Vultr Console](https://my.vultr.com) and click **Deploy** (or **Deploy +**) ➔ **Deploy New Server**.
 2. Choose **Cloud Compute** (Shared CPU).
-3. Pick a location close to you or your users.
-4. For the image, choose **Ubuntu** (latest LTS).
-5. Pick the smallest plan with at least 1 GB RAM.
-6. Give it a name (for example `hackglobal-yourteam`) and click **Deploy Now**.
+3. Pick a location close to your region (e.g., Mumbai, Singapore, Frankfurt, or New York).
+4. For the Operating System, choose **Ubuntu 24.04 LTS x64**.
+5. Pick the plan with at least **1 GB or 2 GB RAM**.
+6. Set the server hostname to `travelmate-ai` and click **Deploy Now**.
+7. Wait 1–2 minutes until the status shows **Running**. On the server's **Overview** page, copy your:
+   - **IP Address** (`YOUR_SERVER_IP`)
+   - **Username** (`root`)
+   - **Password**
 
-Wait a minute or two until the status shows **Running**. On the server's **Overview** page, note the **IP Address**, **Username** (root) and **Password**.
+---
 
-## 2. Connect to the server
+## 2. Connect to the Server
 
-On Mac or Linux, open Terminal. On Windows, open PowerShell.
+Open PowerShell (Windows) or Terminal (Mac/Linux):
 
 ```bash
 ssh root@YOUR_SERVER_IP
 ```
 
-Type `yes` when asked, then paste the password from the Overview page (it won't show as you type).
+Type `yes` when asked, then paste your root password (characters won't appear on screen as you type).
+
+---
 
 ## 3. Install Docker and Git
 
-```bash
-curl -fsSL https://get.docker.com | sh
-apt-get install -y git
-```
-
-## 4. Get your code on the server
+Run this one-line command to install Docker and Git:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO/templates/chat-app      # or the folder your app is in
+curl -fsSL https://get.docker.com | sh && apt-get install -y git
 ```
 
-Create your `.env` file on the server (it is not in GitHub, which is correct):
+Verify Docker is running:
+```bash
+docker --version
+```
+
+---
+
+## 4. Clone Your TravelMate AI Repository
+
+Clone the official repository onto your Vultr server:
 
 ```bash
-cp .env.example .env
-nano .env
+git clone https://github.com/Ranjeet7680/TravelMate.Al.git
+cd TravelMate.Al
 ```
 
-Add your real keys, then press `Ctrl+O`, `Enter`, `Ctrl+X` to save and exit.
+*(Optional)* If you wish to configure an external OpenAI or Vultr Serverless Inference API key:
+```bash
+cat << 'EOF' > .env
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_API_KEY=your_key_here
+LLM_MODEL=gpt-4o-mini
+EOF
+```
 
-## 5. Build and run your app
+---
 
-For **chat-app** or **research-agent** (port 8000):
+## 5. Build and Run TravelMate AI
+
+Build and launch the complete production multi-stage container:
 
 ```bash
-docker build -t myapp .
-docker run -d --name myapp --restart unless-stopped --env-file .env -p 80:8000 myapp
+docker build -t travelmate .
+docker run -d --name travelmate --restart unless-stopped -p 80:8000 travelmate
 ```
 
-For **streamlit-demo** (port 8501):
-
+*Or using Docker Compose:*
 ```bash
-docker build -t myapp .
-docker run -d --name myapp --restart unless-stopped --env-file .env -p 80:8501 myapp
+docker compose up -d --build
 ```
 
-## 6. Open the firewall
+---
+
+## 6. Open the Firewall (Port 80)
+
+Allow HTTP web traffic to reach your application:
 
 ```bash
 ufw allow 80/tcp
 ```
+*(If it outputs `ufw: command not found` or `Firewall not enabled`, you can safely skip this step).*
 
-If it says `ufw: command not found` or `Firewall not enabled`, that's fine. Skip this step.
+---
 
-## 7. Check it's live
+## 7. Verify Your Live Deployment! 🎉
 
-Open `http://YOUR_SERVER_IP` in your browser. This is your **Live Demo URL** for the submission.
+Open your browser and navigate to:
 
-## Updating your app
+👉 **`http://YOUR_SERVER_IP`**
 
-After you push new code to GitHub:
+You should see:
+- 🖥️ **Full 18-Screen TravelMate AI Web Application**
+- 📱 **Interactive iPhone 16 Pro Simulator**
+- ⚡ **FastAPI Multi-Agent API**: `http://YOUR_SERVER_IP/api`
+- 📖 **Interactive Swagger Documentation**: `http://YOUR_SERVER_IP/docs`
+
+> 💡 **This `http://YOUR_SERVER_IP` address is your Live Demo URL for the HackGlobal 2026 project submission form!**
+
+---
+
+## 🔄 Updating Your Live App After Pushing to GitHub
+
+Whenever you push updates to GitHub, update your Vultr server with these quick commands:
 
 ```bash
-cd ~/YOUR_REPO && git pull
-cd templates/chat-app                # your app folder
-docker rm -f myapp
-docker build -t myapp .
-docker run -d --name myapp --restart unless-stopped --env-file .env -p 80:8000 myapp
+cd ~/TravelMate.Al
+git pull origin main
+docker rm -f travelmate
+docker build -t travelmate .
+docker run -d --name travelmate --restart unless-stopped -p 80:8000 travelmate
 ```
 
-## Something not working?
+---
 
-| Problem | Try this |
-| --- | --- |
-| Page doesn't load | Run `docker ps`. If your app isn't listed, run `docker logs myapp` to see the error |
-| "LLM_API_KEY is not set" | Check your `.env` file on the server, then rerun step 5 |
-| Port already in use | Run `docker rm -f myapp`, then rerun step 5 |
-| Still stuck | Ask in the HackGlobal 2026 Discord server with a screenshot of the error |
+## ❓ Troubleshooting
 
-## Optional: Vultr Serverless Inference
+| Issue | Resolution |
+|:---|:---|
+| **Page doesn't load** | Run `docker ps`. If the container isn't running, check logs with `docker logs travelmate`. |
+| **Port 80 already in use** | Run `docker rm -f travelmate`, or check if another service is on port 80 with `lsof -i :80` or `netstat -tlpn`. |
+| **Need to restart** | Run `docker restart travelmate`. |
+| **Container status check** | Run `curl -I http://localhost:8000/api/health`. |
 
-Vultr also offers an OpenAI-compatible LLM API. To use it with these templates, set this in `.env`:
+---
 
-```
+## 🎁 Optional: Vultr Serverless Inference Integration
+
+To leverage Vultr's Serverless Inference LLM API with your hackathon credits, set these variables in `.env`:
+
+```bash
 LLM_BASE_URL=https://api.vultrinference.com/v1
-LLM_API_KEY=your-vultr-inference-key
-LLM_MODEL=a-model-from-your-vultr-inference-dashboard
+LLM_API_KEY=your-vultr-inference-api-key
+LLM_MODEL=llama2-13b-chat
 ```
+Consult the [Vultr Cloud Inference Documentation](https://docs.vultr.com/how-to-use-vultr-cloud-inference-in-python) for model lists and availability.
 
-Check the Vultr Console for availability, pricing and the model list before you rely on it. Docs: https://docs.vultr.com/how-to-use-vultr-cloud-inference-in-python
+---
 
-## When the hackathon ends
-
-Your credits cover the event. Keep your server running until judging is done. After that, add a payment method to keep it live, or destroy the server to stop usage.
+<div align="center">
+  <sub>TravelMate AI • Team Innovation 27X7 • HackGlobal 2026</sub>
+</div>

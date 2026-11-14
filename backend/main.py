@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -51,8 +53,28 @@ booking_agent = BookingAgent()
 voice_agent = VoiceAgent()
 recommendation_agent = RecommendationAgent()
 
+# Detect static directory for serving frontend in production
+static_dir = os.environ.get("STATIC_DIR", os.path.join(os.path.dirname(__file__), "static"))
+if not os.path.exists(static_dir):
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+
 @app.get("/")
-def root():
+def root(request: Request):
+    accept = request.headers.get("accept", "")
+    index_file = os.path.join(static_dir, "index.html")
+    if "text/html" in accept and os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {
+        "status": "online",
+        "team": "Innovation 27X7",
+        "app": settings.APP_NAME,
+        "version": settings.VERSION,
+        "agents_online": 13,
+        "documentation": "/docs"
+    }
+
+@app.get("/api")
+def api_root():
     return {
         "status": "online",
         "team": "Innovation 27X7",
@@ -266,6 +288,24 @@ def process_voice(transcript: str, locale: str = "en-US"):
 @app.get("/api/emergency/contacts")
 def get_emergency_contacts(destination: str = "Dubai", nationality: str = "India"):
     return emergency_agent.get_emergency_info(destination, nationality)
+
+# Mount SPA static files when available
+if os.path.exists(static_dir):
+    assets_dir = os.path.join(static_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def catch_all_spa(full_path: str):
+        if full_path.startswith("api") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        target = os.path.join(static_dir, full_path)
+        if os.path.exists(target) and os.path.isfile(target):
+            return FileResponse(target)
+        index_file = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        raise HTTPException(status_code=404, detail="Not Found")
 
 if __name__ == "__main__":
     import uvicorn

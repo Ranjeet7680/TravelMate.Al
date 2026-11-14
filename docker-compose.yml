@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  travelmate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: travelmate-app
+    restart: unless-stopped
+    ports:
+      - "80:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - STATIC_DIR=/app/static
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
