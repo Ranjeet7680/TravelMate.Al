@@ -6,6 +6,7 @@ import { AuthModal } from './components/AuthModal';
 import { NotificationModal } from './components/NotificationModal';
 import { MarketplaceBookingModal } from './components/MarketplaceBookingModal';
 import { ProUpgradeModal } from './components/ProUpgradeModal';
+import { TicketModal } from './components/TicketModal';
 import { MobileAppSimulator } from './components/mobile/MobileAppSimulator';
 
 // 18 Screens
@@ -42,6 +43,9 @@ const MainLayout: React.FC = () => {
     marketplaceModalOpen,
     setMarketplaceModalOpen,
     marketplaceTab,
+    ticketModalOpen,
+    setTicketModalOpen,
+    selectedTicketBooking,
     viewMode,
     setViewMode 
   } = useTravel();
@@ -231,6 +235,11 @@ const MainLayout: React.FC = () => {
       <BookingModal />
       <AuthModal />
       <ProUpgradeModal />
+      <TicketModal
+        isOpen={ticketModalOpen}
+        onClose={() => setTicketModalOpen(false)}
+        booking={selectedTicketBooking}
+      />
       <NotificationModal 
         isOpen={notificationModalOpen} 
         onClose={() => setNotificationModalOpen(false)} 

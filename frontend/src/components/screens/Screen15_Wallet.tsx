@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTravel } from '../../context/TravelContext';
 import { formatCurrency } from '../../data/travelData';
+import { generateETicketPDF } from '../../utils/pdfTicketGenerator';
 import { 
   Ticket, 
   Plane, 
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const Screen15_Wallet: React.FC = () => {
-  const { bookingHistory, currency, activeTrip, setCurrentScreen } = useTravel();
+  const { bookingHistory, currency, activeTrip, setCurrentScreen, openTicketModal } = useTravel();
 
   const [activeTab, setActiveTab] = useState<'trips' | 'wallet'>('trips');
   const [tripFilter, setTripFilter] = useState<'upcoming' | 'completed' | 'saved'>('upcoming');
@@ -131,8 +132,8 @@ export const Screen15_Wallet: React.FC = () => {
               </button>
 
               <button
-                onClick={() => alert('Downloading complete travel dossier PDF for Dubai trip...')}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300"
+                onClick={() => generateETicketPDF(null)}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <Download className="w-4 h-4 text-ai-purple" />
                 <span>Export Dossier (PDF)</span>
@@ -181,13 +182,22 @@ export const Screen15_Wallet: React.FC = () => {
                   <span>DXB E-Gate Boarding Pass</span>
                 </div>
 
-                <button
-                  onClick={() => alert('Downloading official E-Ticket & Boarding pass PDF...')}
-                  className="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download E-Ticket</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openTicketModal(b)}
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-midnight-navy dark:text-white transition flex items-center gap-1.5"
+                  >
+                    <Ticket className="w-3.5 h-3.5 text-ai-purple" />
+                    <span>View Pass</span>
+                  </button>
+                  <button
+                    onClick={() => generateETicketPDF(b)}
+                    className="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download E-Ticket (PDF)</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

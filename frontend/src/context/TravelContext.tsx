@@ -74,6 +74,11 @@ interface TravelContextType {
   proPlan: 'monthly' | 'annual';
   setProPlan: (plan: 'monthly' | 'annual') => void;
   activateProMembership: (plan: 'monthly' | 'annual', method: string) => void;
+  ticketModalOpen: boolean;
+  setTicketModalOpen: (open: boolean) => void;
+  selectedTicketBooking: BookingConfirmation | null;
+  setSelectedTicketBooking: (b: BookingConfirmation | null) => void;
+  openTicketModal: (booking?: BookingConfirmation | null) => void;
   viewMode: 'desktop' | 'mobile';
   setViewMode: (v: 'desktop' | 'mobile') => void;
   activeBooking: BookingConfirmation | null;
@@ -146,6 +151,14 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       },
       ...prev,
     ]);
+  };
+
+  const [ticketModalOpen, setTicketModalOpen] = useState<boolean>(false);
+  const [selectedTicketBooking, setSelectedTicketBooking] = useState<BookingConfirmation | null>(null);
+
+  const openTicketModal = (booking?: BookingConfirmation | null) => {
+    if (booking) setSelectedTicketBooking(booking);
+    setTicketModalOpen(true);
   };
 
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
@@ -624,6 +637,11 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         proPlan,
         setProPlan,
         activateProMembership,
+        ticketModalOpen,
+        setTicketModalOpen,
+        selectedTicketBooking,
+        setSelectedTicketBooking,
+        openTicketModal,
         viewMode,
         setViewMode,
         activeBooking,

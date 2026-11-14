@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTravel } from '../../context/TravelContext';
 import { formatCurrency } from '../../data/travelData';
 import { BookingConfirmation } from '../../types';
+import { generateETicketPDF } from '../../utils/pdfTicketGenerator';
 import confetti from 'canvas-confetti';
 import { 
   CreditCard, 
@@ -21,7 +22,8 @@ export const Screen14_Payment: React.FC = () => {
     currency, 
     userProfile, 
     addBookingToHistory, 
-    setCurrentScreen 
+    setCurrentScreen,
+    openTicketModal 
   } = useTravel();
 
   const [step, setStep] = useState<'checkout' | 'confirmed'>('checkout');
@@ -233,13 +235,24 @@ export const Screen14_Payment: React.FC = () => {
                 <QrCode className="w-8 h-8 text-midnight-navy dark:text-white" />
                 <span>Scan at DXB E-Gate</span>
               </div>
-              <button
-                onClick={() => alert('Downloading official PDF receipt for ' + confirmedBooking?.bookingId)}
-                className="btn-primary-gradient px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download PDF Voucher</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openTicketModal(confirmedBooking)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-midnight-navy dark:text-white transition flex items-center gap-1.5"
+                >
+                  <Ticket className="w-3.5 h-3.5 text-ai-purple" />
+                  <span>View Pass UI</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => generateETicketPDF(confirmedBooking)}
+                  className="btn-primary-gradient px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download PDF Voucher</span>
+                </button>
+              </div>
             </div>
           </div>
 

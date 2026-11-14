@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTravel } from '../context/TravelContext';
 import { formatCurrency } from '../data/travelData';
 import { BookingConfirmation } from '../types';
+import { generateETicketPDF } from '../utils/pdfTicketGenerator';
 import confetti from 'canvas-confetti';
 import { 
   X, 
@@ -24,7 +25,8 @@ export const BookingModal: React.FC = () => {
     currency, 
     userProfile, 
     addBookingToHistory,
-    setCurrentScreen 
+    setCurrentScreen,
+    openTicketModal 
   } = useTravel();
 
   const [step, setStep] = useState<'checkout' | 'confirmed'>('checkout');
@@ -266,13 +268,22 @@ export const BookingModal: React.FC = () => {
                   <QrCode className="w-7 h-7 text-midnight-navy dark:text-white" />
                   <span>Valid at DXB E-Gate</span>
                 </div>
-                <button
-                  onClick={() => alert(`Downloading E-Ticket PDF for ${confirmedBooking?.bookingId}...`)}
-                  className="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download PDF</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openTicketModal(confirmedBooking)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-midnight-navy dark:text-white transition flex items-center gap-1.5"
+                  >
+                    <Ticket className="w-3.5 h-3.5 text-ai-purple" />
+                    <span>View Boarding Pass UI</span>
+                  </button>
+                  <button
+                    onClick={() => generateETicketPDF(confirmedBooking)}
+                    className="btn-primary-gradient px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download PDF</span>
+                  </button>
+                </div>
               </div>
             </div>
 
