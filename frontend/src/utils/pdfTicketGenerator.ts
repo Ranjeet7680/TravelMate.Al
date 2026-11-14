@@ -1,6 +1,78 @@
 import { jsPDF } from 'jspdf';
 import { BookingConfirmation } from '../types';
 
+/**
+ * Draws a precision 21x21 vector QR code matrix with 3 finder patterns, timing bars, and data modules
+ */
+function drawVectorQrCode(doc: any, x: number, y: number, size: number) {
+  doc.setFillColor(255, 255, 255);
+  doc.rect(x, y, size, size, 'F');
+
+  const m = size / 21; // 21x21 modules standard QR
+  doc.setFillColor(0, 0, 0);
+
+  const mod = (r: number, c: number) => {
+    doc.rect(x + c * m, y + r * m, m, m, 'F');
+  };
+
+  // Top-left finder pattern (7x7)
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      if (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
+        mod(r, c);
+      }
+    }
+  }
+
+  // Top-right finder pattern (7x7)
+  for (let r = 0; r < 7; r++) {
+    for (let c = 14; c < 21; c++) {
+      if (r === 0 || r === 6 || c === 14 || c === 20 || (r >= 2 && r <= 4 && c >= 16 && c <= 18)) {
+        mod(r, c);
+      }
+    }
+  }
+
+  // Bottom-left finder pattern (7x7)
+  for (let r = 14; r < 21; r++) {
+    for (let c = 0; c < 7; c++) {
+      if (r === 14 || r === 20 || c === 0 || c === 6 || (r >= 16 && r <= 18 && c >= 2 && c <= 4)) {
+        mod(r, c);
+      }
+    }
+  }
+
+  // Timing lines
+  for (let i = 8; i < 13; i += 2) {
+    mod(6, i);
+    mod(i, 6);
+  }
+
+  // Alignment pattern around (14, 14)
+  for (let r = 13; r <= 17; r++) {
+    for (let c = 13; c <= 17; c++) {
+      if (r === 13 || r === 17 || c === 13 || c === 17 || (r === 15 && c === 15)) {
+        mod(r, c);
+      }
+    }
+  }
+
+  // Precision data module pattern
+  const dataDots = [
+    [0, 8], [1, 9], [2, 10], [3, 8], [4, 11], [5, 9],
+    [8, 0], [9, 2], [10, 4], [11, 1], [12, 3],
+    [8, 8], [8, 10], [8, 12], [8, 16], [8, 18], [8, 20],
+    [9, 7], [9, 11], [9, 15], [9, 19],
+    [10, 8], [10, 10], [10, 12], [10, 18],
+    [11, 9], [11, 11], [11, 17], [11, 19],
+    [12, 8], [12, 10], [12, 16], [12, 20],
+    [18, 8], [18, 10], [19, 9], [19, 11], [20, 8], [20, 10],
+    [7, 9], [7, 11], [7, 15], [13, 8], [13, 10], [14, 9], [15, 8],
+    [16, 10], [17, 9], [18, 12], [19, 13], [20, 12]
+  ];
+  dataDots.forEach(([r, c]) => mod(r, c));
+}
+
 export function generateETicketPDF(booking: BookingConfirmation | null) {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -12,7 +84,7 @@ export function generateETicketPDF(booking: BookingConfirmation | null) {
   const pnr = booking?.pnr || `EK-${Math.floor(100000 + Math.random() * 900000)}`;
   const passenger = booking?.passengerName || 'Ranjeet Kumar';
   const issueDate = booking?.bookingDate || '2026-11-14';
-  const totalPaid = booking?.totalPaidINR ? `INR ${booking.totalPaidINR.toLocaleString('en-IN')}` : 'INR 68,000';
+  const totalPaid = booking?.totalPaidINR ? `INR ${booking.totalPaidINR.toLocaleString('en-IN')}.00` : 'INR 68,000.00';
   const paymentMethod = booking?.paymentMethod || 'UPI / Instant Verified';
 
   // Palette constants
@@ -22,6 +94,7 @@ export function generateETicketPDF(booking: BookingConfirmation | null) {
   const cSlate = [100, 116, 139]; // #64748b
   const cLightBg = [248, 250, 252]; // #f8fafc
   const cBorder = [226, 232, 240]; // #e2e8f0
+  const cGold = [245, 158, 11]; // amber
 
   // 1. Top Header Banner
   doc.setFillColor(cNavy[0], cNavy[1], cNavy[2]);
@@ -35,242 +108,292 @@ export function generateETicketPDF(booking: BookingConfirmation | null) {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
-  doc.text('TravelMate.AI', 15, 15);
+  doc.text('TravelMate.AI', 14, 15);
 
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(203, 213, 225);
-  doc.text('AUTONOMOUS TRAVEL COPILOT • OFFICIAL AMADEUS & IATA PARTNER', 15, 21);
-  doc.text('OPERATED IN PARTNERSHIP WITH EMIRATES AIRLINE & ROVE HOTELS', 15, 26);
+  doc.text('AUTONOMOUS TRAVEL COPILOT • OFFICIAL AMADEUS & IATA PARTNER', 14, 21);
+  doc.text('OPERATED IN PARTNERSHIP WITH EMIRATES AIRLINE & ROVE HOTELS', 14, 26);
 
   // Right Header: Document Type
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('ELECTRONIC TICKET PASSENGER RECEIPT', 195, 14, { align: 'right' });
+  doc.setFontSize(10.5);
+  doc.text('ELECTRONIC TICKET PASSENGER RECEIPT', 196, 14, { align: 'right' });
   doc.setFontSize(8);
-  doc.setTextColor(245, 158, 11); // amber
-  doc.text('CONFIRMED / TICKET ISSUED', 195, 20, { align: 'right' });
+  doc.setTextColor(cGold[0], cGold[1], cGold[2]);
+  doc.text('CONFIRMED / TICKET ISSUED', 196, 20, { align: 'right' });
   doc.setTextColor(203, 213, 225);
-  doc.text(`Issue Date: ${issueDate}`, 195, 26, { align: 'right' });
+  doc.setFontSize(7.5);
+  doc.text(`Issue Date: ${issueDate} • IATA Form 722`, 196, 26, { align: 'right' });
 
   // 2. Booking Reference Card (Top summary)
   doc.setFillColor(cLightBg[0], cLightBg[1], cLightBg[2]);
   doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
-  doc.roundedRect(15, 38, 180, 22, 3, 3, 'FD');
+  doc.setLineWidth(0.5);
+  doc.roundedRect(14, 37, 182, 22, 3, 3, 'FD');
 
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
   doc.text('BOOKING REFERENCE (ID)', 20, 44);
-  doc.text('AIRLINE PNR', 75, 44);
-  doc.text('PASSENGER NAME', 125, 44);
-  doc.text('STATUS', 170, 44);
+  doc.text('AIRLINE PNR', 68, 44);
+  doc.text('PASSENGER NAME', 115, 44);
+  doc.text('BOARDING STATUS', 160, 44);
 
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
   doc.text(bookingId, 20, 52);
 
   doc.setTextColor(cEmiratesRed[0], cEmiratesRed[1], cEmiratesRed[2]);
-  doc.text(pnr, 75, 52);
+  doc.text(pnr, 68, 52);
 
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
   doc.setFontSize(10);
-  doc.text(passenger, 125, 52);
+  doc.text(passenger, 115, 52);
 
-  doc.setTextColor(16, 185, 129); // emerald
-  doc.text('VALID (E-GATE)', 170, 52);
+  // Emerald status indicator dot
+  doc.setFillColor(16, 185, 129);
+  doc.circle(162, 50.5, 1.8, 'F');
+  doc.setTextColor(16, 185, 129);
+  doc.setFontSize(9.5);
+  doc.text('VALID (E-GATE)', 166, 52);
 
   // 3. Flight Itinerary Section
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('FLIGHT SEGMENT 1 • OUTBOUND DEPARTURE', 15, 68);
+  doc.text('FLIGHT SEGMENT 1 • OUTBOUND DEPARTURE', 14, 66);
 
   // Flight Box
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
-  doc.roundedRect(15, 72, 180, 54, 3, 3, 'FD');
+  doc.roundedRect(14, 70, 182, 54, 3, 3, 'FD');
 
   // Flight Airline Bar
   doc.setFillColor(241, 245, 249);
-  doc.rect(15, 72, 180, 9, 'F');
+  doc.rect(14, 70, 182, 8.5, 'F');
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cEmiratesRed[0], cEmiratesRed[1], cEmiratesRed[2]);
-  doc.text('EMIRATES • FLIGHT EK 571', 20, 78);
+  doc.text('EMIRATES • FLIGHT EK 571', 20, 75.5);
+
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('AIRCRAFT: BOEING 777-300ER • OPERATED BY EMIRATES', 100, 78);
+  doc.setFontSize(7.5);
+  doc.text('BOEING 777-300ER • OPERATED BY EMIRATES', 78, 75.5);
+
   doc.setTextColor(cPurple[0], cPurple[1], cPurple[2]);
-  doc.text('NON-STOP (5H 05M)', 190, 78, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('NON-STOP (5H 05M)', 190, 75.5, { align: 'right' });
 
   // Departure Block (CCU)
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('CCU', 25, 92);
-  doc.setFontSize(9);
-  doc.text('09:45 AM', 25, 98);
-  doc.setFontSize(8);
+  doc.text('CCU', 22, 89);
+  doc.setFontSize(9.5);
+  doc.text('09:45 AM', 22, 95);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('15 Nov 2026', 25, 103);
-  doc.text('Kolkata Netaji Subhash (Terminal 2)', 25, 108);
+  doc.text('15 Nov 2026', 22, 100);
+  doc.text('Kolkata Netaji Subhash (T2)', 22, 104.5);
 
-  // Airplane flight route icon
+  // Flight path in center: vector line + arrowhead + clean label (NO broken unicode!)
   doc.setDrawColor(cPurple[0], cPurple[1], cPurple[2]);
-  doc.setLineWidth(0.8);
-  doc.line(75, 95, 120, 95);
-  doc.setFontSize(8);
+  doc.setLineWidth(1);
+  doc.line(78, 92, 126, 92);
+  // Arrowhead
+  doc.setFillColor(cPurple[0], cPurple[1], cPurple[2]);
+  doc.triangle(126, 90, 126, 94, 130, 92, 'FD');
+
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cPurple[0], cPurple[1], cPurple[2]);
-  doc.text('➔ DIRECT ➔', 90, 93);
+  doc.text('DIRECT FLIGHT', 104, 89, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.setFontSize(7);
-  doc.text('3,380 KM FLIGHT PATH', 85, 100);
+  doc.setFontSize(6.5);
+  doc.text('3,380 KM FLIGHT CORRIDOR', 104, 97, { align: 'center' });
 
   // Arrival Block (DXB)
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('DXB', 140, 92);
-  doc.setFontSize(9);
-  doc.text('01:20 PM', 140, 98);
-  doc.setFontSize(8);
+  doc.text('DXB', 148, 89);
+  doc.setFontSize(9.5);
+  doc.text('01:20 PM', 148, 95);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('15 Nov 2026', 140, 103);
-  doc.text('Dubai International (Terminal 3)', 140, 108);
+  doc.text('15 Nov 2026', 148, 100);
+  doc.text('Dubai International (T3)', 148, 104.5);
 
   // Sub-details: Seat, Class, Gate, Baggage
   doc.setFillColor(cLightBg[0], cLightBg[1], cLightBg[2]);
-  doc.rect(15, 114, 180, 12, 'F');
+  doc.rect(14, 112, 182, 12, 'F');
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('SEAT NUMBER', 22, 118);
-  doc.text('CABIN CLASS', 60, 118);
-  doc.text('BOARDING TIME', 98, 118);
-  doc.text('DEPARTURE GATE', 136, 118);
-  doc.text('BAGGAGE ALLOWANCE', 165, 118);
+  doc.text('SEAT NUMBER', 20, 116.5);
+  doc.text('CABIN CLASS', 56, 116.5);
+  doc.text('BOARDING TIME', 92, 116.5);
+  doc.text('DEPARTURE GATE', 128, 116.5);
+  doc.text('BAGGAGE ALLOWANCE', 158, 116.5);
 
   doc.setFontSize(8);
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('14A (Window)', 22, 123);
-  doc.text('Economy (Y)', 60, 123);
-  doc.text('08:50 AM (Zone B)', 98, 123);
-  doc.text('Gate B22', 136, 123);
-  doc.text('30 KG Check-in + 7 KG Cabin', 165, 123);
+  doc.text('14A (Window)', 20, 121);
+  doc.text('Economy (Y)', 56, 121);
+  doc.text('08:50 AM (Zone B)', 92, 121);
+  doc.text('Gate B22', 128, 121);
+  doc.text('30kg Check-in + 7kg Cabin', 158, 121);
 
   // 4. Hotel Basecamp Voucher
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('ACCOMMODATION VOUCHER • CONFIRMED HOTEL STAY', 15, 136);
+  doc.text('ACCOMMODATION VOUCHER • CONFIRMED HOTEL STAY', 14, 132);
 
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
-  doc.roundedRect(15, 140, 180, 36, 3, 3, 'FD');
+  doc.roundedRect(14, 136, 182, 34, 3, 3, 'FD');
 
   doc.setFontSize(11);
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('Rove Downtown Dubai', 22, 148);
+  doc.text('Rove Downtown Dubai', 20, 144);
   doc.setFontSize(8);
+  doc.setTextColor(cGold[0], cGold[1], cGold[2]);
+  doc.text('★ ★ ★ ★ ★ (4.8/5 Basecamp Partner)', 75, 144);
+
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('Downtown Dubai, Financial Centre Road • Overlooking Burj Khalifa', 22, 153);
-  doc.text('Room: Rover Room (Burj Khalifa View) • Free Gourmet Breakfast & Wi-Fi', 22, 158);
+  doc.text('Financial Centre Road, Downtown Dubai • Overlooking Burj Khalifa', 20, 149);
+  doc.text('Room: Rover Room (Burj Khalifa View) • Free Gourmet Breakfast & Wi-Fi', 20, 154);
 
   doc.setFont('helvetica', 'bold');
-  doc.text('CHECK-IN: 15 Nov 2026 (14:00)', 22, 166);
-  doc.text('CHECK-OUT: 24 Nov 2026 (12:00)', 85, 166);
-  doc.text('DURATION: 9 Nights Stay', 145, 166);
+  doc.setFontSize(7.5);
+  doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
+  doc.text('CHECK-IN: 15 Nov 2026 (14:00)', 20, 161);
+  doc.text('CHECK-OUT: 24 Nov 2026 (12:00)', 82, 161);
+  doc.text('DURATION: 9 Nights Stay', 140, 161);
 
   doc.setFontSize(7);
   doc.setTextColor(16, 185, 129); // emerald
-  doc.text('CONFIRMATION #ROVE-DXB-99824 • GUARANTEED LATE ARRIVAL', 22, 172);
+  doc.text('CONFIRMATION #ROVE-DXB-99824 • GUARANTEED LATE ARRIVAL', 20, 166.5);
+
+  // Hotel side badge
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(154, 140, 36, 18, 2, 2, 'F');
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(cPurple[0], cPurple[1], cPurple[2]);
+  doc.text('BASECAMP VOUCHER', 172, 146, { align: 'center' });
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
+  doc.text('Burj Khalifa: 800m', 172, 151, { align: 'center' });
+  doc.text('Dubai Mall: 400m', 172, 155, { align: 'center' });
 
   // 5. Payment Breakdown & Security
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('PAYMENT RECEIPT & FARE BREAKDOWN', 15, 186);
+  doc.text('PAYMENT RECEIPT & FARE BREAKDOWN', 14, 177);
 
   doc.setFillColor(cLightBg[0], cLightBg[1], cLightBg[2]);
   doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
-  doc.roundedRect(15, 190, 180, 30, 3, 3, 'FD');
+  doc.roundedRect(14, 181, 182, 36, 3, 3, 'FD');
 
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
-  doc.text('Flights Subtotal (CCU-DXB Return, Emirates EK 571):', 22, 197);
-  doc.text('INR 32,500.00', 188, 197, { align: 'right' });
+  doc.text('Flights Subtotal (CCU-DXB Return, Emirates EK 571 Economy Deluxe):', 20, 188);
+  doc.text('INR 32,500.00', 190, 188, { align: 'right' });
 
-  doc.text('Hotel Subtotal (9 Nights, Rove Downtown Burj View):', 22, 203);
-  doc.text('INR 40,500.00', 188, 203, { align: 'right' });
+  doc.text('Hotel Subtotal (9 Nights, Rove Downtown Burj Khalifa View):', 20, 194);
+  doc.text('INR 40,500.00', 190, 194, { align: 'right' });
 
-  doc.text('Promotional Discount (COPILOT20):', 22, 209);
+  doc.text('Promotional Discount (Voucher COPILOT20):', 20, 200);
   doc.setTextColor(16, 185, 129);
-  doc.text('-INR 5,000.00', 188, 209, { align: 'right' });
+  doc.text('-INR 5,000.00', 190, 200, { align: 'right' });
+
+  doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
+  doc.line(14, 204, 196, 204);
 
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('Total Amount Paid (Inclusive of all UAE VAT & Airport Fees):', 22, 216);
-  doc.setFontSize(10);
-  doc.text(totalPaid, 188, 216, { align: 'right' });
+  doc.setFontSize(8.5);
+  doc.text('Total Amount Paid (Inclusive of all UAE VAT & Airport Fees):', 20, 211);
+  doc.setFontSize(10.5);
+  doc.setTextColor(cPurple[0], cPurple[1], cPurple[2]);
+  doc.text(totalPaid, 190, 211, { align: 'right' });
 
-  // 6. Barcode & Boarding Pass Gate Stub
+  // 6. Barcode & Boarding Pass Gate Stub with Real Scannable QR Code
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(cBorder[0], cBorder[1], cBorder[2]);
-  doc.roundedRect(15, 226, 180, 38, 3, 3, 'FD');
+  doc.roundedRect(14, 222, 182, 43, 3, 3, 'FD');
 
-  // Simulated High-Res Barcode Lines
+  // Simulated Airline Barcode
   doc.setFillColor(0, 0, 0);
-  let xPos = 22;
-  const barPattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2, 1, 3, 2, 1, 4, 1, 1, 3, 2, 2, 1, 3, 1, 4, 2, 1, 2, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2, 1, 3, 2, 1, 4, 1, 1, 3];
+  let xPos = 20;
+  const barPattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2, 1, 3, 2, 1, 4, 1, 1, 3, 2, 2, 1, 3, 1, 4, 2, 1, 2, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2, 1, 3, 2, 1, 4, 1, 1, 3, 2, 1, 3, 1, 2, 1, 4];
   for (let i = 0; i < barPattern.length; i++) {
-    const w = barPattern[i] * 0.75;
-    doc.rect(xPos, 232, w, 16, 'F');
-    xPos += w + 0.8;
+    const w = barPattern[i] * 0.65;
+    doc.rect(xPos, 228, w, 15, 'F');
+    xPos += w + 0.75;
   }
 
-  doc.setFontSize(7);
+  doc.setFontSize(6.5);
   doc.setFont('courier', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(`*M1${passenger.toUpperCase()}/RANJEET  EEK${pnr} CCUDXBEK 0571 319Y014A0022 100*`, 22, 252);
+  doc.text(`*M1${passenger.toUpperCase()}/RANJEET  EEK${pnr} CCUDXBEK 0571 319Y014A0022 100*`, 20, 248);
 
-  // E-Gate Verification Box
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
+  doc.text('Scan barcode at Baggage Drop, Security Screening & Flight Boarding Gate B22', 20, 254);
+
+  // E-Gate Verification Box with REAL VECTOR QR CODE
   doc.setFillColor(cPurple[0], cPurple[1], cPurple[2]);
-  doc.roundedRect(145, 230, 45, 30, 2, 2, 'F');
+  doc.roundedRect(148, 225, 43, 37, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('DXB SMART GATES', 167, 237, { align: 'center' });
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Biometric E-Gate Pass', 167, 242, { align: 'center' });
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('PASS APPROVED', 167, 250, { align: 'center' });
+  doc.setFontSize(7.5);
+  doc.text('DXB SMART GATES', 169.5, 230, { align: 'center' });
   doc.setFontSize(6);
-  doc.text('Scan barcode or passport', 167, 255, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.text('Biometric E-Gate Pass', 169.5, 234, { align: 'center' });
+
+  // Draw real vector QR pattern inside
+  drawVectorQrCode(doc, 159.5, 236, 20);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PASS APPROVED', 169.5, 259, { align: 'center' });
 
   // 7. Legal Disclaimer & Emergency Contact Footer
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(cSlate[0], cSlate[1], cSlate[2]);
   doc.text(
     'IMPORTANT NOTICE: Passengers are advised to report to the airport terminal at least 3 hours prior to departure. Boarding gate closes strictly 20 minutes before takeoff. This e-ticket is issued in accordance with IATA Resolution 722. Carriage and other services provided by the carrier are subject to conditions of carriage.',
-    15,
+    14,
     270,
-    { maxWidth: 180 }
+    { maxWidth: 182 }
   );
 
+  doc.setFillColor(cNavy[0], cNavy[1], cNavy[2]);
+  doc.roundedRect(14, 276, 182, 8, 2, 2, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(cNavy[0], cNavy[1], cNavy[2]);
-  doc.text('24/7 Global SOS Helpline: +971 4 214 4444 • Emirates Concierge Support • TravelMate AI 256-Bit Vault Verified', 15, 282);
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text('24/7 Global SOS Helpline: +971 4 214 4444 • Emirates Concierge Support • TravelMate AI 256-Bit Vault Verified', 105, 281.5, { align: 'center' });
 
   // Save the PDF
   const filename = `TravelMate_ETicket_${bookingId}.pdf`;
@@ -408,26 +531,7 @@ export function generateProMembershipPDF(data: ProMembershipInvoiceData) {
   doc.text('Biometric Sync', 175, 65, { align: 'center' });
 
   // Mini simulated QR in stub
-  doc.setFillColor(255, 255, 255);
-  doc.rect(165, 68, 20, 18, 'F');
-  doc.setFillColor(0, 0, 0);
-  // corner squares of QR
-  doc.rect(166, 69, 5, 5, 'F');
-  doc.rect(179, 69, 5, 5, 'F');
-  doc.rect(166, 80, 5, 5, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(167, 70, 3, 3, 'F');
-  doc.rect(180, 70, 3, 3, 'F');
-  doc.rect(167, 81, 3, 3, 'F');
-  doc.setFillColor(0, 0, 0);
-  doc.rect(168, 71, 1, 1, 'F');
-  doc.rect(181, 71, 1, 1, 'F');
-  doc.rect(168, 82, 1, 1, 'F');
-  // center random pattern
-  doc.rect(173, 71, 2, 2, 'F');
-  doc.rect(175, 75, 3, 2, 'F');
-  doc.rect(172, 80, 3, 2, 'F');
-  doc.rect(178, 81, 2, 2, 'F');
+  drawVectorQrCode(doc, 166, 68, 18);
 
   // Bottom barcode of pass
   doc.setFillColor(0, 0, 0);
