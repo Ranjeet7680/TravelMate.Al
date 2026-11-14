@@ -5,16 +5,19 @@
 # TravelMate AI – Intelligent Virtual Travel Agent & Copilot
 ### **Team Innovation 27X7 — AI Agents & Intelligent Systems**
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Vultr Cloud](https://img.shields.io/badge/Deploy-Vultr%20Cloud%20(Mumbai)-007BFC?style=for-the-badge&logo=vultr&logoColor=white)](http://65.20.72.238)
+[![Live Status](https://img.shields.io/badge/Live%20App-65.20.72.238-2ea44f?style=for-the-badge)](http://65.20.72.238)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](http://65.20.72.238/docs)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript%205.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Expo](https://img.shields.io/badge/Mobile-Expo%2052%20%7C%20React%20Native-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev)
-[![TailwindCSS](https://img.shields.io/badge/Design-Tailwind%20CSS%20v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Python](https://img.shields.io/badge/Engine-Python%203.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Docker](https://img.shields.io/badge/Container-Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Wiki](https://img.shields.io/badge/Docs-GitHub%20Wiki-8A2BE2?style=for-the-badge&logo=github)](https://github.com/Ranjeet7680/TravelMate.Al/wiki)
+[![WireGuard](https://img.shields.io/badge/VPN-WireGuard%20Self--Hosted-88171A?style=for-the-badge&logo=wireguard&logoColor=white)](#-wireguard-vpn-challenge-hackglobal-2026)
 
 **"Your world. Your journey. Your AI copilot."**
 
-[Live Web Demo](http://localhost:3000) • [API Documentation](http://localhost:8000/docs) • [Mobile App Codebase](./mobile) • [Architecture Diagrams](#-system-architecture--diagrams)
+[🌐 Live Web Demo](http://65.20.72.238) • [⚡ API Health Check](http://65.20.72.238/api/health) • [📖 Interactive Swagger Docs](http://65.20.72.238/docs) • [📚 Official GitHub Wiki](https://github.com/Ranjeet7680/TravelMate.Al/wiki) • [📱 Mobile App Codebase](./mobile)
 
 ---
 
@@ -270,8 +273,8 @@ Designed strictly according to the **Team Innovation 27X7 Design System**:
 
 ### 1. Clone & Setup
 ```bash
-git clone https://github.com/Ranjeet7680/Travel-Mate-AI.git
-cd Travel-Mate-AI
+git clone https://github.com/Ranjeet7680/TravelMate.Al.git
+cd TravelMate.Al
 ```
 
 ### 2. Run Desktop Web Platform
@@ -305,6 +308,61 @@ npm run start
 - Press `i` to launch in the iOS Simulator.
 - Press `a` to launch in the Android Emulator.
 - Scan the QR code using the **Expo Go** app on your physical mobile device.
+
+---
+
+## 🌐 Live Production Deployment on Vultr Cloud
+
+TravelMate AI is deployed on a dedicated high-performance **Vultr Cloud Compute** instance in **Mumbai, India**.
+
+* **Live Demo URL**: [http://65.20.72.238](http://65.20.72.238)
+* **Backend Health Check**: [http://65.20.72.238/api/health](http://65.20.72.238/api/health)
+* **Interactive OpenAPI Swagger Docs**: [http://65.20.72.238/docs](http://65.20.72.238/docs)
+* **13-Agent Swarm Registry**: [http://65.20.72.238/api/agents](http://65.20.72.238/api/agents)
+* **Server Specifications**:
+  - **Location**: Mumbai, India (APAC)
+  - **vCPU**: 4 vCPUs High-Performance
+  - **Memory**: 12 GB RAM
+  - **Storage**: 260 GB NVMe SSD
+  - **OS**: Ubuntu 26.10 / 24.04 LTS x64
+  - **Runtime**: Docker Engine container mapping `0.0.0.0:80->8000/tcp` (serving both React 19 SPA & FastAPI backend)
+
+### Docker Compose Deployment
+```bash
+# Clone and enter repo
+git clone https://github.com/Ranjeet7680/TravelMate.Al.git
+cd TravelMate.Al
+
+# Build & launch containerized multi-stage stack
+docker compose up -d --build
+
+# Verify container status
+docker ps
+```
+
+---
+
+## 🛡️ WireGuard VPN Challenge (HackGlobal 2026)
+
+Alongside the TravelMate application, the Vultr server hosts a self-configured **WireGuard VPN** server, enabling end-to-end encrypted tunneling directly through the Mumbai gateway.
+
+* **Tunnel Endpoint**: `65.20.72.238:51820` (UDP)
+* **Virtual Subnet**: `10.8.0.0/24` (Server: `10.8.0.1`, Client: `10.8.0.2`)
+* **Routing**: Full IPv4 forwarding (`net.ipv4.ip_forward=1`) with iptables NAT masquerading across `enp1s0`.
+* **Client Pairing**: QR Code generation via `qrencode` for 1-tap phone import into WireGuard iOS/Android apps.
+
+---
+
+## 📚 Official GitHub Wiki Documentation
+
+Explore in-depth architectural specifications and operational playbooks in our published [TravelMate AI Wiki](https://github.com/Ranjeet7680/TravelMate.Al/wiki):
+
+1. [**Home**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/Home) — Executive overview, mission statement, and system topology.
+2. [**AI Agent Swarm Architecture**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/AI-Agent-Swarm-Architecture) — In-depth breakdown of all 13 agents, consensus engine, and state machines.
+3. [**18 Screens Web Platform**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/18-Screens-Web-Platform) — Detailed operational guide for all desktop screens.
+4. [**Mobile App & iPhone Simulator**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/Mobile-App-&-iPhone-Simulator) — Mobile design system, Expo workflows, and interactive simulator guide.
+5. [**API Reference & Data Models**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/API-Reference-&-Data-Models) — 27 REST endpoints, Pydantic schemas, and sample payloads.
+6. [**Deployment Guide & Vultr Setup**](https://github.com/Ranjeet7680/TravelMate.Al/wiki/Deployment-Guide-&-Vultr-Setup) — Production Dockerization, cloud firewall, and WireGuard configuration.
 
 ---
 
