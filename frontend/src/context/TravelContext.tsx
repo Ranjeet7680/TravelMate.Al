@@ -16,8 +16,10 @@ import {
   DUBAI_FLIGHT_OPTIONS, 
   DUBAI_HOTEL_OPTIONS, 
   EXPLORER_DESTINATIONS,
-  INITIAL_AGENTS 
+  INITIAL_AGENTS,
+  formatCurrency
 } from '../data/travelData';
+import { api } from '../services/api';
 
 interface TravelNotification {
   id: string;
@@ -43,7 +45,9 @@ interface TravelContextType {
   agents: AgentInfo[];
   updateAgentStatus: (id: AgentRole, status: AgentInfo['status'], activity?: string) => void;
   activeTrip: FullTripItinerary;
+  currentTrip: FullTripItinerary;
   setActiveTrip: React.Dispatch<React.SetStateAction<FullTripItinerary>>;
+  formatPrice: (amountINR: number) => string;
   chatMessages: AgentChatMessage[];
   addChatMessage: (msg: AgentChatMessage) => void;
   sendUserPrompt: (prompt: string) => Promise<void>;
@@ -296,6 +300,61 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const lower = prompt.toLowerCase();
 
+    const isCompareQuery = lower.includes('compare') || 
+      lower.includes('trip.com') || 
+      lower.includes('makemytrip') || 
+      lower.includes('cheapest') ||
+      lower.includes('sasta') || 
+      lower.includes('sasti') ||
+      lower.includes('versus') || 
+      lower.includes('vs') ||
+      /[\u0600-\u06FF]/.test(prompt) ||
+      /[\u0900-\u097F]/.test(prompt);
+
+    if (isCompareQuery) {
+      updateAgentStatus('orchestrator', 'thinking', 'Enterprise AI engine: cross-comparing Trip.com & MakeMyTrip');
+      updateAgentStatus('flight', 'searching', 'Querying live Trip.com & MakeMyTrip flight inventory...');
+      updateAgentStatus('hotel', 'searching', 'Querying live hotel partners & cancellation policies...');
+      updateAgentStatus('budget', 'thinking', 'Evaluating best value pricing & potential savings...');
+
+      try {
+        const copilotResult = await api.askCopilot(prompt);
+        updateAgentStatus('orchestrator', 'completed', 'OTA comparison synthesized with verified fares');
+        updateAgentStatus('flight', 'completed', 'Trip.com & MakeMyTrip flight options ready');
+        updateAgentStatus('hotel', 'completed', 'Preferred hotel deals matched');
+        updateAgentStatus('budget', 'completed', 'Cheapest & recommended options tagged');
+
+        const cards: any[] = [];
+        if (copilotResult.comparison_data) {
+          cards.push({
+            type: 'comparison_card',
+            data: copilotResult.comparison_data
+          });
+        }
+
+        const copilotResponse: AgentChatMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'copilot',
+          agentRole: 'orchestrator',
+          text: copilotResult.reply,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          cards: cards.length > 0 ? cards : undefined,
+          agentThoughtTrace: [
+            { agentId: 'orchestrator', action: `Processed multilingual intent (${copilotResult.language})`, status: 'done' },
+            { agentId: 'flight', action: 'Cross-compared live inventory from Trip.com & MakeMyTrip', status: 'done' },
+            { agentId: 'hotel', action: 'Verified breakfast & cancellation policies', status: 'done' },
+            { agentId: 'budget', action: 'Computed lowest fare and maximum potential savings', status: 'done' },
+          ]
+        };
+
+        setChatMessages(prev => [...prev, copilotResponse]);
+        speakText(copilotResult.reply);
+        return;
+      } catch (e) {
+        console.error('Copilot compare error', e);
+      }
+    }
+
     // Check if user requested a specific destination from our 52 locations
     const matchedDest = EXPLORER_DESTINATIONS.find(d => {
       const dName = d.name.toLowerCase();
@@ -478,6 +537,10 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const formatPrice = useCallback((amountINR: number) => {
+    return formatCurrency(amountINR, currency);
+  }, [currency]);
+
   return (
     <TravelContext.Provider
       value={{
@@ -495,7 +558,9 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         agents,
         updateAgentStatus,
         activeTrip,
+        currentTrip: activeTrip,
         setActiveTrip,
+        formatPrice,
         chatMessages,
         addChatMessage,
         sendUserPrompt,

@@ -16,7 +16,8 @@ export type ScreenType =
   | '15-wallet'
   | '16-voice'
   | '17-profile'
-  | '18-admin';
+  | '18-admin'
+  | '19-compare';
 
 export type AgentRole = 
   | 'orchestrator'
@@ -208,7 +209,7 @@ export interface AgentChatMessage {
   text: string;
   timestamp: string;
   cards?: {
-    type: 'flight_list' | 'hotel_list' | 'itinerary_preview' | 'budget_summary' | 'visa_info' | 'emergency_card';
+    type: 'flight_list' | 'hotel_list' | 'itinerary_preview' | 'budget_summary' | 'visa_info' | 'emergency_card' | 'comparison_card';
     data: any;
   }[];
   agentThoughtTrace?: {
@@ -302,3 +303,83 @@ export interface SightseeingTour {
   image: string;
   highlights: string;
 }
+
+export interface UnifiedFlightOption {
+  id: string;
+  provider: 'Trip.com' | 'MakeMyTrip' | 'Amadeus GDS' | 'Direct Airline';
+  provider_code: 'tripcom' | 'makemytrip' | 'amadeus' | 'direct';
+  provider_badge: string;
+  airline: string;
+  airline_code: string;
+  flight_number: string;
+  origin_code: string;
+  origin_city: string;
+  destination_code: string;
+  destination_city: string;
+  departure_time: string;
+  arrival_time: string;
+  duration: string;
+  duration_minutes: number;
+  stops: number;
+  stop_details: string;
+  cabin_class: string;
+  baggage: string;
+  refundable: boolean;
+  cancellation_policy: string;
+  price_inr: number;
+  price_usd: number;
+  price_aed: number;
+  taxes_and_fees_inr: number;
+  currency: string;
+  booking_url: string;
+  revalidation_token: string;
+  availability_timestamp: string;
+  is_cheapest: boolean;
+  is_fastest: boolean;
+  is_recommended: boolean;
+  recommendation_reason?: string;
+}
+
+export interface UnifiedHotelOption {
+  id: string;
+  provider: 'Trip.com' | 'MakeMyTrip' | 'Amadeus GDS' | 'Direct Hotel';
+  provider_code: 'tripcom' | 'makemytrip' | 'amadeus' | 'direct';
+  provider_badge: string;
+  name: string;
+  city: string;
+  location: string;
+  stars: number;
+  rating: number;
+  reviews_count: number;
+  room_type: string;
+  price_per_night_inr: number;
+  total_price_inr: number;
+  price_usd: number;
+  price_aed: number;
+  currency: string;
+  breakfast_included: boolean;
+  free_cancellation: boolean;
+  cancellation_deadline?: string;
+  amenities: string[];
+  image_url: string;
+  booking_url: string;
+  revalidation_token: string;
+  availability_timestamp: string;
+  is_cheapest: boolean;
+  is_best_rated: boolean;
+  is_recommended: boolean;
+  recommendation_reason?: string;
+}
+
+export interface RevalidationResponse {
+  valid: boolean;
+  offer_id: string;
+  provider_code: string;
+  current_price_inr: number;
+  price_changed: boolean;
+  price_difference_inr: number;
+  confirmed_inventory: boolean;
+  booking_redirect_url: string;
+  message: string;
+}
+

@@ -26,7 +26,8 @@ import {
   Receipt,
   Smartphone,
   Globe,
-  Lock
+  Lock,
+  ArrowRightLeft
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { screen: '03-landing', label: 'Landing Page', icon: <Globe className="w-4 h-4 text-sky-500" /> },
     { screen: '04-login', label: 'Login / Sign In', icon: <Lock className="w-4 h-4 text-emerald-500" />, badge: 'Vault' },
     { screen: '05-dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { screen: '19-compare', label: 'Compare & Book', icon: <ArrowRightLeft className="w-4 h-4 text-indigo-500" />, badge: 'OTA' },
     { screen: '06-copilot', label: 'AI Travel Copilot', icon: <Bot className="w-4 h-4" />, badge: 'AI' },
     { screen: '10-destinations', label: 'Destination Explorer', icon: <Compass className="w-4 h-4" />, badge: '50+' },
     { action: () => openMarketplace('packages'), label: 'Holiday Packages', icon: <Sparkles className="w-4 h-4 text-amber-500" />, badge: 'Deals' },

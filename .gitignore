@@ -8,6 +8,7 @@ mobile/node_modules/
 # Production Builds
 dist/
 frontend/dist/
+backend/static/
 build/
 .expo/
 web-build/

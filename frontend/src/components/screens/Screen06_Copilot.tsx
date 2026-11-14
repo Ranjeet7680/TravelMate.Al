@@ -55,13 +55,23 @@ function useTypingAnimation(text: string, speed = 18) {
 interface MessageBubbleProps {
   id: string;
   text: string;
-  sender: 'user' | 'ai' | 'agent';
+  sender: 'user' | 'ai' | 'copilot' | 'agent';
   isLatest: boolean;
+  cards?: any[];
   onActionItinerary: () => void;
   onActionBook: () => void;
+  onOpenCompare: () => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, onActionItinerary, onActionBook }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ 
+  text, 
+  sender, 
+  isLatest, 
+  cards,
+  onActionItinerary, 
+  onActionBook,
+  onOpenCompare 
+}) => {
   const isUser = sender === 'user';
   const shouldAnimate = isLatest && !isUser;
   const { displayed, done } = useTypingAnimation(shouldAnimate ? text : text, shouldAnimate ? 16 : 0);
@@ -72,11 +82,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, o
     const parts = raw.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-black">{part.slice(2, -2)}</strong>;
+        return <strong key={i} className="font-black text-slate-900 dark:text-white">{part.slice(2, -2)}</strong>;
       }
       return <span key={i}>{part}</span>;
     });
   };
+
+  const comparisonCard = cards?.find(c => c.type === 'comparison_card')?.data;
 
   return (
     <div className={`flex gap-3 animate-message-in ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -86,7 +98,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, o
         </div>
       )}
 
-      <div className={`space-y-3 ${isUser ? 'items-end' : 'items-start'} max-w-[85%]`}>
+      <div className={`space-y-3 ${isUser ? 'items-end' : 'items-start'} max-w-[88%]`}>
         {/* Text bubble */}
         <div className={`p-4 rounded-2xl text-sm leading-relaxed transition-all ${
           isUser
@@ -100,6 +112,87 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, o
             )}
           </div>
 
+          {/* Embedded Comparison Card */}
+          {comparisonCard && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[11px] font-bold">
+                    Trip.com vs MakeMyTrip
+                  </span>
+                  {comparisonCard.price_range_inr && (
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
+                      Save up to ₹{comparisonCard.price_range_inr.max_potential_savings?.toLocaleString('en-IN')}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={onOpenCompare}
+                  className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1"
+                >
+                  Deep Compare <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Best Deal Highlights */}
+              {comparisonCard.best_deal && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {comparisonCard.best_deal.recommended && (
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-blue-500/30">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400 mb-1">
+                        <span>🌟 BEST VALUE PICK</span>
+                        <span>{comparisonCard.best_deal.recommended.provider}</span>
+                      </div>
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {comparisonCard.best_deal.recommended.airline || comparisonCard.best_deal.recommended.name}
+                      </div>
+                      <div className="text-slate-400 text-[11px] mt-0.5">
+                        {comparisonCard.best_deal.recommended.duration || comparisonCard.best_deal.recommended.room_type}
+                      </div>
+                      <div className="text-base font-black text-slate-900 dark:text-white mt-1">
+                        ₹{(comparisonCard.best_deal.recommended.price_inr || comparisonCard.best_deal.recommended.price_per_night_inr)?.toLocaleString('en-IN')}
+                      </div>
+                      <a
+                        href={comparisonCard.best_deal.recommended.booking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 block w-full py-1.5 text-center bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[11px] transition shadow-sm"
+                      >
+                        Book on {comparisonCard.best_deal.recommended.provider} ↗
+                      </a>
+                    </div>
+                  )}
+
+                  {comparisonCard.best_deal.cheapest && (
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+                        <span>💰 LOWEST FARE</span>
+                        <span>{comparisonCard.best_deal.cheapest.provider}</span>
+                      </div>
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {comparisonCard.best_deal.cheapest.airline || comparisonCard.best_deal.cheapest.name}
+                      </div>
+                      <div className="text-slate-400 text-[11px] mt-0.5">
+                        {comparisonCard.best_deal.cheapest.duration || comparisonCard.best_deal.cheapest.room_type}
+                      </div>
+                      <div className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                        ₹{(comparisonCard.best_deal.cheapest.price_inr || comparisonCard.best_deal.cheapest.price_per_night_inr)?.toLocaleString('en-IN')}
+                      </div>
+                      <a
+                        href={comparisonCard.best_deal.cheapest.booking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 block w-full py-1.5 text-center bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-lg text-[11px] transition shadow-sm"
+                      >
+                        Book on {comparisonCard.best_deal.cheapest.provider} ↗
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* CTA action buttons inside copilot card */}
           {!isUser && done && (text.includes('Flights') || text.includes('Transit') || text.includes('Hotels') || text.includes('Plan')) && (
             <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-700/60 mt-3">
@@ -109,6 +202,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ text, sender, isLatest, o
               >
                 <span>View Full Itinerary</span>
                 <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={onOpenCompare}
+                className="px-4 py-2 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 font-bold text-xs text-blue-600 dark:text-blue-400 transition"
+              >
+                Compare & Book (OTAs)
               </button>
               <button
                 onClick={onActionBook}
@@ -230,10 +329,13 @@ export const Screen06_Copilot: React.FC = () => {
   };
 
   const quickChips = [
-    { label: '✈️ Plan a trip', query: 'I want to travel from Dhanbad to Dubai for 10 days.' },
-    { label: '💰 Trip budget', query: 'Calculate the total budget breakdown for 10 days in Dubai' },
-    { label: '🛂 Visa info', query: 'What are the UAE Visa requirements for Indian passport?' },
-    { label: '🏨 Hotels', query: 'Find luxury hotels with Burj Khalifa views in Downtown Dubai' },
+    { label: '✈️ Cheapest Flights', query: 'Find cheapest flights from Delhi to Dubai.' },
+    { label: '🏨 Compare Dubai Hotels', query: 'Compare Dubai hotels under ₹5,000 per night.' },
+    { label: '🔄 Trip.com vs MakeMyTrip', query: 'Compare Trip.com and MakeMyTrip.' },
+    { label: '🌴 10-Day Dubai Plan', query: 'Plan my 10-day Dubai trip.' },
+    { label: '💳 Best Budget Flight', query: 'Find the best international flight for my budget.' },
+    { label: '🇮🇳 Hinglish', query: 'Delhi se Dubai sasti flight batao' },
+    { label: '🇦🇪 العربية', query: 'قارن أفضل رحلات الطيران إلى دبي' },
   ];
 
   const recentChats = [
@@ -390,8 +492,10 @@ export const Screen06_Copilot: React.FC = () => {
                 text={msg.text}
                 sender={msg.sender as any}
                 isLatest={idx === chatMessages.length - 1 && msg.sender !== 'user'}
+                cards={msg.cards}
                 onActionItinerary={() => setCurrentScreen('11-itinerary')}
                 onActionBook={() => setBookingModalOpen(true)}
+                onOpenCompare={() => setCurrentScreen('19-compare')}
               />
             ))}
 

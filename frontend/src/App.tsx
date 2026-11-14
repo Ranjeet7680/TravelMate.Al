@@ -26,6 +26,7 @@ import { Screen15_Wallet } from './components/screens/Screen15_Wallet';
 import { Screen16_Voice } from './components/screens/Screen16_Voice';
 import { Screen17_Profile } from './components/screens/Screen17_Profile';
 import { Screen18_Admin } from './components/screens/Screen18_Admin';
+import { Screen19_CompareAndBook } from './components/screens/Screen19_CompareAndBook';
 
 import { Menu, Sun, Moon, Globe, Bot, Smartphone, Monitor } from 'lucide-react';
 
@@ -156,6 +157,7 @@ const MainLayout: React.FC = () => {
                 {currentScreen === '16-voice' && <Screen16_Voice />}
                 {currentScreen === '17-profile' && <Screen17_Profile />}
                 {currentScreen === '18-admin' && <Screen18_Admin />}
+                {currentScreen === '19-compare' && <Screen19_CompareAndBook />}
               </>
             )}
           </main>
@@ -173,6 +175,10 @@ const MainLayout: React.FC = () => {
                   <span className="agent-online-dot"></span>
                   <span className="text-travel-teal font-semibold">13 Agents Active</span>
                 </span>
+                <span>•</span>
+                <span>Trip.com Partner</span>
+                <span>•</span>
+                <span>MakeMyTrip Handoff</span>
                 <span>•</span>
                 <span>Amadeus GDS</span>
                 <span>•</span>

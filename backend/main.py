@@ -25,6 +25,7 @@ from agents.transport_agent import TransportAgent
 from agents.booking_agent import BookingAgent
 from agents.voice_agent import VoiceAgent
 from agents.recommendation_agent import RecommendationAgent
+from routes.providers import router as providers_router
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -40,6 +41,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(providers_router)
 
 orchestrator = MultiAgentOrchestrator()
 flight_agent = FlightAgent()
