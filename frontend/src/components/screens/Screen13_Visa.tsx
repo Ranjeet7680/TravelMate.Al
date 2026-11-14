@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTravel } from '../../context/TravelContext';
+import { generateVisaChecklistPDF } from '../../utils/pdfTicketGenerator';
 import { 
   ShieldCheck, 
   FileText, 
@@ -82,7 +83,7 @@ export const Screen13_Visa: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
           <button
-            onClick={() => alert('Downloading official PDF Visa application checklist for UAE...')}
+            onClick={() => generateVisaChecklistPDF()}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-midnight-navy dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
           >
             <Download className="w-4 h-4 text-ai-purple" />

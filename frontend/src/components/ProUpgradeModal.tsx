@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTravel } from '../context/TravelContext';
 import confetti from 'canvas-confetti';
+import { generateProMembershipPDF } from '../utils/pdfTicketGenerator';
 import {
   Crown,
   X,
@@ -22,7 +23,9 @@ import {
   ArrowRight,
   ExternalLink,
   ChevronRight,
-  Award
+  Award,
+  Printer,
+  Ticket
 } from 'lucide-react';
 
 export const ProUpgradeModal: React.FC = () => {
@@ -42,6 +45,7 @@ export const ProUpgradeModal: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [pdfDownloaded, setPdfDownloaded] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [qrSecondsLeft, setQrSecondsLeft] = useState(300); // 5 minutes timer
   const [selectedPlayMethod, setSelectedPlayMethod] = useState<'balance' | 'card'>('balance');
@@ -145,63 +149,151 @@ export const ProUpgradeModal: React.FC = () => {
               </p>
             </div>
 
-            {/* Digital Pro Card */}
-            <div className="relative mx-auto max-w-md p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white shadow-2xl border border-amber-500/40 text-left overflow-hidden">
-              <div className="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="flex items-center justify-between">
+            {/* Luxury VIP Ticket Card */}
+            <div className="relative mx-auto max-w-md rounded-3xl bg-gradient-to-br from-[#0b0f19] via-[#151c33] to-[#1e1338] text-white shadow-2xl border-2 border-amber-500/40 text-left overflow-hidden">
+              {/* Gold Holographic Ambient Glow */}
+              <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-amber-400/25 to-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-gradient-to-tr from-purple-600/20 to-sky-500/15 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Perforated Notches (Left & Right Cutouts) */}
+              <div className="absolute -left-3.5 top-[58%] -translate-y-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#0c1222] border-r-2 border-amber-500/40 z-20 pointer-events-none" />
+              <div className="absolute -right-3.5 top-[58%] -translate-y-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#0c1222] border-l-2 border-amber-500/40 z-20 pointer-events-none" />
+
+              {/* Top Golden Header Ribbon */}
+              <div className="px-6 pt-5 pb-3 bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-transparent border-b border-amber-500/20 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span className="font-mono text-[11px] font-bold tracking-wider text-amber-400">
-                    TRAVELMATE.AI PRO PASS
+                  <span className="font-mono text-[11px] font-black tracking-wider text-amber-400 uppercase">
+                    TRAVELMATE.AI VIP PASS
                   </span>
                 </div>
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-[10px] border border-amber-500/30">
-                  <Crown className="w-3 h-3 fill-amber-300" />
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/25 to-amber-600/25 text-amber-300 font-black text-[10px] border border-amber-500/40 shadow-sm shadow-amber-500/20">
+                  <Crown className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
                   <span>PRO ELITE</span>
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Member Name</div>
-                  <div className="text-lg font-black text-white">{userProfile.name}</div>
+              {/* Passenger Credentials Body */}
+              <div className="p-6 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">VIP Member Name</div>
+                    <div className="text-xl font-black text-white tracking-wide">{userProfile.name || 'Ranjeet Kumar'}</div>
+                    <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>Biometric Verified • Global Access</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pass ID</div>
+                    <div className="text-xs font-mono font-black text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                      TMPRO-2026-8941
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pass ID</div>
-                  <div className="text-xs font-mono font-bold text-amber-300">TMPRO-2026-8941</div>
+
+                <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase">Membership Tier</div>
+                    <div className="font-bold text-amber-200 mt-0.5">{selectedPlan === 'annual' ? 'Annual All-Access (365d)' : 'Monthly Access (30d)'}</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase">Swarm Mesh</div>
+                    <div className="font-bold text-emerald-300 mt-0.5 flex items-center gap-1">
+                      <Radio className="w-3 h-3" />
+                      <span>11 Agents Synced</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Perforated Divider Line */}
+                <div className="relative pt-3 pb-1">
+                  <div className="border-t-2 border-dashed border-amber-500/30 w-full" />
+                </div>
+
+                {/* Lower Ticket Stub: Barcode & Fast-Track Access */}
+                <div className="pt-1 flex items-center justify-between gap-3">
+                  <div className="flex-1 space-y-1.5">
+                    {/* Simulated High-Density Barcode */}
+                    <div className="h-9 bg-white/95 rounded px-2 py-1.5 flex items-center justify-between overflow-hidden">
+                      {[3, 1, 2, 4, 1, 3, 2, 1, 1, 4, 2, 1, 3, 1, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2].map((w, idx) => (
+                        <div
+                          key={idx}
+                          className="h-full bg-slate-900"
+                          style={{ width: `${w * 1.5}px` }}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-[9px] font-mono text-slate-400 tracking-wider">
+                      *TMPRO-2026-8941-DXB-GATE-OK*
+                    </div>
+                  </div>
+
+                  {/* QR Fast Pass Box */}
+                  <div className="w-16 h-16 rounded-xl bg-white p-1 flex flex-col items-center justify-center shrink-0 shadow-lg">
+                    <QrCode className="w-11 h-11 text-slate-900" />
+                    <span className="text-[7px] font-black text-slate-700 uppercase">E-GATE</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                  <Radio className="w-3.5 h-3.5" />
-                  <span>11 Agents Swarm Mesh Active</span>
-                </div>
-                <div className="text-slate-400">
-                  Valid for: <span className="text-white font-bold">{selectedPlan === 'annual' ? '12 Months' : '30 Days'}</span>
-                </div>
+              {/* Bottom Security Footer */}
+              <div className="px-6 py-2.5 bg-black/40 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400">
+                <span className="flex items-center gap-1 text-amber-300/90 font-medium">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>VIP Lounge & Concierge Priority</span>
+                </span>
+                <span>GST Tax Invoice Included</span>
               </div>
             </div>
 
+            {/* Feedback alert when downloaded */}
+            {pdfDownloaded && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold animate-fade-in mx-auto">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>TravelMate PRO Elite Pass & Official Tax Invoice PDF downloaded to your device!</span>
+              </div>
+            )}
+
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <div className="flex flex-wrap gap-3 justify-center pt-2">
               <button
                 onClick={() => {
                   handleClose();
                   setCurrentScreen('05-dashboard');
                 }}
-                className="btn-primary-gradient px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                className="btn-primary-gradient px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 active:scale-95 transition"
               >
                 <span>Launch Pro Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
               <button
-                onClick={() => alert('Official Tax Invoice & VIP Member Pass downloaded.')}
-                className="px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 transition"
+                onClick={() => {
+                  generateProMembershipPDF({
+                    memberName: userProfile.name || 'Ranjeet Kumar',
+                    passId: 'TMPRO-2026-8941',
+                    plan: selectedPlan,
+                    amount: planPrice,
+                    paymentMethod: activeTab === 'upi' ? `UPI (${upiId})` : activeTab === 'qr' ? 'UPI Dynamic QR' : activeTab === 'applepay' ? 'Apple Pay (Biometric)' : activeTab === 'gpay' ? 'Google Pay' : 'Google Play Billing',
+                    issueDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                  });
+                  setPdfDownloaded(true);
+                  setTimeout(() => setPdfDownloaded(false), 4000);
+                }}
+                className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition active:scale-95"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-slate-950" />
                 <span>Download Invoice PDF</span>
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 transition active:scale-95"
+                title="Print VIP Pass"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Ticket</span>
               </button>
             </div>
           </div>
