@@ -15,7 +15,8 @@ import {
   Lock, 
   Trash2, 
   Check, 
-  Sparkles 
+  Sparkles,
+  Crown 
 } from 'lucide-react';
 
 export const Screen17_Profile: React.FC = () => {
@@ -27,7 +28,9 @@ export const Screen17_Profile: React.FC = () => {
     currency, 
     setCurrency, 
     language, 
-    setLanguage 
+    setLanguage,
+    isPro,
+    setProModalOpen
   } = useTravel();
 
   const [name, setName] = useState(userProfile.name);
@@ -77,10 +80,59 @@ export const Screen17_Profile: React.FC = () => {
             <h2 className="text-lg font-black text-midnight-navy dark:text-white">{userProfile.name}</h2>
             <p className="text-xs text-slate-400">{userProfile.email}</p>
             <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full mt-1 inline-block">
-              Verified Gold Explorer
+              {isPro ? '👑 Pro Elite Member' : 'Verified Gold Explorer'}
             </span>
           </div>
         </div>
+
+        {/* Pro Membership Banner */}
+        {isPro ? (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-600/15 to-transparent border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500 to-amber-600 text-white flex items-center gap-1 shadow-sm">
+                  <Crown className="w-3 h-3 fill-white" />
+                  <span>PRO ELITE VIP PASS</span>
+                </span>
+                <span className="text-xs font-bold text-emerald-500">● 11 Agents Active</span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                VIP Flight Alert Pings, 24/7 SOS Satellite Hotline & Zero Forex Cashbacks enabled.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setProModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold text-xs hover:bg-amber-500/30 transition whitespace-nowrap flex items-center gap-1.5 self-start sm:self-auto"
+            >
+              <span>View VIP Pass & Card</span>
+              <Sparkles className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500/15 via-indigo-500/10 to-sky-500/10 border border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-ai-purple text-white flex items-center gap-1">
+                  <Crown className="w-3 h-3 text-amber-300" />
+                  <span>UPGRADE TO PRO</span>
+                </span>
+                <span className="text-xs font-bold text-ai-purple">Get 11 Autonomous Agents</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Unlock VIP flight alert pings, real-time negotiation, and 24/7 emergency SOS helpline.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setProModalOpen(true)}
+              className="btn-primary-gradient px-4 py-2 rounded-xl font-bold text-xs shadow-md whitespace-nowrap flex items-center gap-1.5 self-start sm:self-auto"
+            >
+              <span>Upgrade Now</span>
+              <span>➔</span>
+            </button>
+          </div>
+        )}
 
         {/* Inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

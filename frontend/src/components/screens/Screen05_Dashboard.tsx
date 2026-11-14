@@ -20,7 +20,8 @@ import {
   Zap,
   Clock,
   Globe2,
-  Navigation
+  Navigation,
+  Crown
 } from 'lucide-react';
 
 // ── Animated counter hook ─────────────────────────────────────────────────────
@@ -81,7 +82,9 @@ export const Screen05_Dashboard: React.FC = () => {
     savedDestinations,
     toggleSaveDestination,
     notifications,
-    setNotificationModalOpen 
+    setNotificationModalOpen,
+    isPro,
+    setProModalOpen
   } = useTravel();
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -148,6 +151,29 @@ export const Screen05_Dashboard: React.FC = () => {
               </>
             )}
           </button>
+
+          {/* Pro Status or Upgrade Button */}
+          {isPro ? (
+            <button
+              onClick={() => setProModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/40 text-amber-600 dark:text-amber-400 font-extrabold text-xs shadow-sm hover:scale-105 transition"
+              title="View Pro VIP Perks"
+            >
+              <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+              <span className="hidden sm:inline">PRO ELITE</span>
+              <span className="sm:hidden">PRO</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setProModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition shadow-purple-500/20"
+              title="Upgrade to Pro: 11 Agents & 24/7 SOS"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-200 fill-amber-200" />
+              <span className="hidden sm:inline">Upgrade Pro</span>
+              <span className="sm:hidden">Pro</span>
+            </button>
+          )}
 
           <div
             onClick={() => setCurrentScreen('17-profile')}

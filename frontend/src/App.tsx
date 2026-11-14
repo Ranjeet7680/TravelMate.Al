@@ -5,6 +5,7 @@ import { BookingModal } from './components/BookingModal';
 import { AuthModal } from './components/AuthModal';
 import { NotificationModal } from './components/NotificationModal';
 import { MarketplaceBookingModal } from './components/MarketplaceBookingModal';
+import { ProUpgradeModal } from './components/ProUpgradeModal';
 import { MobileAppSimulator } from './components/mobile/MobileAppSimulator';
 
 // 18 Screens
@@ -194,6 +195,7 @@ const MainLayout: React.FC = () => {
       {/* Global Modals */}
       <BookingModal />
       <AuthModal />
+      <ProUpgradeModal />
       <NotificationModal 
         isOpen={notificationModalOpen} 
         onClose={() => setNotificationModalOpen(false)} 

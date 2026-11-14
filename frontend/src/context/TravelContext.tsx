@@ -67,6 +67,13 @@ interface TravelContextType {
   marketplaceTab: 'packages' | 'cabs' | 'cars' | 'bikes' | 'sightseeing';
   setMarketplaceTab: (tab: 'packages' | 'cabs' | 'cars' | 'bikes' | 'sightseeing') => void;
   openMarketplace: (tab?: 'packages' | 'cabs' | 'cars' | 'bikes' | 'sightseeing') => void;
+  proModalOpen: boolean;
+  setProModalOpen: (open: boolean) => void;
+  isPro: boolean;
+  setIsPro: (pro: boolean) => void;
+  proPlan: 'monthly' | 'annual';
+  setProPlan: (plan: 'monthly' | 'annual') => void;
+  activateProMembership: (plan: 'monthly' | 'annual', method: string) => void;
   viewMode: 'desktop' | 'mobile';
   setViewMode: (v: 'desktop' | 'mobile') => void;
   activeBooking: BookingConfirmation | null;
@@ -111,6 +118,36 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [notificationModalOpen, setNotificationModalOpen] = useState<boolean>(false);
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState<boolean>(false);
   const [marketplaceTab, setMarketplaceTab] = useState<'packages' | 'cabs' | 'cars' | 'bikes' | 'sightseeing'>('packages');
+  const [proModalOpen, setProModalOpen] = useState<boolean>(false);
+  const [isPro, setIsPro] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('travelmate_pro') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [proPlan, setProPlan] = useState<'monthly' | 'annual'>('annual');
+
+  const activateProMembership = (plan: 'monthly' | 'annual', method: string) => {
+    setIsPro(true);
+    setProPlan(plan);
+    try {
+      localStorage.setItem('travelmate_pro', 'true');
+      localStorage.setItem('travelmate_pro_plan', plan);
+    } catch {}
+    setNotifications(prev => [
+      {
+        id: `notif-pro-${Date.now()}`,
+        title: '👑 TravelMate Pro Elite Activated!',
+        description: `Your ${plan === 'annual' ? 'Annual (Save 40%)' : 'Monthly'} Pro membership is now live via ${method}. All 11 Autonomous Agents & 24/7 SOS unlocked.`,
+        time: 'Just now',
+        read: false,
+        type: 'deal',
+      },
+      ...prev,
+    ]);
+  };
+
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const openMarketplace = (tab?: 'packages' | 'cabs' | 'cars' | 'bikes' | 'sightseeing') => {
@@ -580,6 +617,13 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         marketplaceTab,
         setMarketplaceTab,
         openMarketplace,
+        proModalOpen,
+        setProModalOpen,
+        isPro,
+        setIsPro,
+        proPlan,
+        setProPlan,
+        activateProMembership,
         viewMode,
         setViewMode,
         activeBooking,
